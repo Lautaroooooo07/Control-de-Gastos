@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gastos de casa</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gastos">
+<script src="config.js"></script>
+<script>try { var t = localStorage.getItem('gastos.tema'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f6f6f4; --surface:#ffffff; --surface-2:#f0f0ed;
+  --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --line:rgba(11,11,11,.08);
+  --accent:#2a78d6; --accent-ink:#ffffff; --accent-soft:#e8f1fc;
+  --out:#2a78d6; --in:#1baf7a; --in-ink:#0b7a52; --in-soft:#e2f5ed;
+  --good:#006300; --good-soft:#e5f3e5; --bad:#d03b3b; --bad-soft:#fbeaea; --warn:#b36b00;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --r:20px; --seg-sel:#ffffff;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#252523;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --line:rgba(255,255,255,.08);
+    --accent:#3987e5; --accent-soft:#1a283a;
+    --out:#3987e5; --in:#199e70; --in-ink:#3fcf98; --in-soft:#13281f;
+    --good:#0ca30c; --good-soft:#14261a; --bad:#e66767; --bad-soft:#371c1c; --warn:#fab219;
+    --shadow:none; --seg-sel:#3a3a37;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#252523;
+  --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+  --line:rgba(255,255,255,.08);
+  --accent:#3987e5; --accent-soft:#1a283a;
+  --out:#3987e5; --in:#199e70; --in-ink:#3fcf98; --in-soft:#13281f;
+  --good:#0ca30c; --good-soft:#14261a; --bad:#e66767; --bad-soft:#371c1c; --warn:#fab219;
+  --shadow:none; --seg-sel:#3a3a37;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:17px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer;padding:0}
+[hidden]{display:none!important}
+svg.lucide{width:22px;height:22px;stroke-width:1.8;flex:none}
+i[data-lucide]{display:inline-block;width:22px;height:22px}
+
+/* Barra superior */
+.appbar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.appbar-in{max-width:560px;margin:0 auto;padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.quien-w{position:relative}
+.quien-btn{display:flex;align-items:center;gap:10px;text-align:left;padding:4px 10px 4px 4px;border-radius:999px}
+.quien-btn:active{background:var(--surface-2)}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:18px;flex:none}
+.hola{font-size:14px;color:var(--muted);line-height:1.2}
+.hola b{display:flex;align-items:center;gap:2px;font-size:19px;color:var(--ink);font-weight:700;letter-spacing:-.2px}
+.hola b svg.lucide{width:18px;height:18px;color:var(--muted)}
+.quien-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:220px;background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 12px 32px rgba(0,0,0,.16);padding:6px;z-index:8;animation:entrar .15s ease}
+.quien-menu p{margin:6px 12px 8px;font-size:13px;color:var(--muted);font-weight:600}
+.quien-menu button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:12px;font-weight:600;font-size:17px}
+.quien-menu button:active{background:var(--surface-2)}
+.quien-menu button.sel{background:var(--accent-soft)}
+.quien-menu .avatar{width:36px;height:36px;font-size:16px}
+.quien-menu button svg.lucide{margin-left:auto;color:var(--accent)}
+.mes-sel{display:flex;align-items:center;gap:2px;background:var(--surface);border-radius:999px;padding:4px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.mes-sel span{min-width:92px;text-align:center;font-weight:600;font-size:16px}
+.icon-btn{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}
+.icon-btn:active{background:var(--surface-2)}
+.icon-btn:disabled{opacity:.25}
+
+main{max-width:560px;margin:0 auto;padding:6px 16px 120px}
+.tab{animation:entrar .25s ease}
+@keyframes entrar{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.card + .card,.tiles + .card,.card + .tiles,.acciones + .card,.card + .acciones,.acciones + .tiles{margin-top:12px}
+.label{font-size:14px;color:var(--muted);font-weight:500;margin:0}
+h2{font-size:17px;font-weight:700;margin:0;letter-spacing:-.1px}
+.demo{display:flex;gap:10px;align-items:center;margin-bottom:12px;padding:12px 14px;border-radius:14px;background:var(--surface-2);color:var(--ink-2);font-size:14px}
+.demo svg.lucide{width:18px;height:18px}
+
+/* Números grandes */
+.hero-num{font-size:42px;font-weight:750;letter-spacing:-1.5px;margin:4px 0 12px;line-height:1.05}
+.hero-num.pos{color:var(--good)}
+.hero-num.neg{color:var(--bad)}
+.num-md{font-size:30px;font-weight:750;letter-spacing:-1px;margin:2px 0 10px}
+.delta{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:6px 10px 6px 8px;border-radius:999px}
+.delta svg.lucide{width:16px;height:16px;stroke-width:2.2}
+.delta.good{background:var(--good-soft);color:var(--good)}
+.delta.bad{background:var(--bad-soft);color:var(--bad)}
+.delta.neutral{background:var(--surface-2);color:var(--ink-2)}
+
+/* Balance */
+.flujo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.flujo div{padding:12px 14px;border-radius:14px;background:var(--surface-2)}
+.flujo span{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2);font-weight:500}
+.flujo span i.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.flujo b{display:block;font-size:19px;margin-top:2px;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.dot.in{background:var(--in)} .dot.out{background:var(--out)}
+.reparto{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:16px 0 10px;background:var(--surface-2);gap:2px}
+.reparto i{display:block;height:100%;transition:width .6s cubic-bezier(.2,.8,.2,1);width:0}
+.reparto i.out{background:var(--out);border-radius:99px 0 0 99px}
+.reparto i.resto{background:var(--in);border-radius:0 99px 99px 0}
+.reparto i.out:last-child{border-radius:99px}
+.bal-sub{font-size:15px;color:var(--ink-2)}
+.bal-sub b{color:var(--ink)}
+
+/* Presupuesto */
+.pres{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.pres-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pres-top b{font-size:17px}
+.pres-top span{color:var(--muted);font-size:14px}
+.track{height:8px;border-radius:99px;background:var(--surface-2);margin:10px 0;overflow:hidden}
+.track i{display:block;height:100%;border-radius:99px;background:var(--accent);width:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.track.warn i{background:var(--warn)}
+.track.bad i{background:var(--bad)}
+.pres-sub{font-size:14px;color:var(--ink-2)}
+.pres-sub b{color:var(--ink)}
+.link{color:var(--accent);font-weight:600;font-size:15px;padding:8px 0;text-align:left}
+
+/* Acciones rápidas */
+.acciones{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.accion{display:flex;align-items:center;gap:12px;text-align:left;padding:14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.accion:active{transform:scale(.98)}
+.acc-ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);flex:none}
+.acc-ico.in{background:var(--in-soft);color:var(--in-ink)}
+.accion b{display:block;font-size:15px;line-height:1.2}
+.accion small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+
+/* Instalar */
+.instalar{display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:12px;border-radius:var(--r);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+.instalar > span:nth-child(2){flex:1;min-width:0}
+.instalar b{display:block;font-size:16px}
+.instalar small{display:block;color:var(--ink-2);font-size:13px}
+.instalar button{padding:10px 16px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px}
+
+/* Tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.tile{background:var(--surface);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);border:1px solid var(--line);min-height:118px;display:flex;flex-direction:column}
+.tile .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;margin-bottom:10px}
+.tile .ico svg.lucide{width:18px;height:18px}
+.tile .ico.good{background:var(--good-soft);color:var(--good)}
+.tile .ico.bad{background:var(--bad-soft);color:var(--bad)}
+.tile .ico.neutral{background:var(--surface-2);color:var(--ink-2)}
+.tile .v{font-size:21px;font-weight:700;letter-spacing:-.4px;margin:2px 0}
+.tile .v.good{color:var(--good)}
+.tile .v.bad{color:var(--bad)}
+.tile .s{font-size:13px;color:var(--muted);margin-top:auto}
+
+.sec-head{display:flex;justify-content:space-between;align-items:center;margin:26px 4px 10px}
+.sec-head button{color:var(--accent);font-weight:600;font-size:15px;padding:6px 0}
+
+/* Movimientos */
+.list{padding:6px 0}
+.mov{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:12px 18px}
+.mov:active{background:var(--surface-2)}
+.cat-ico{width:42px;height:42px;border-radius:13px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.cat-ico.in{background:var(--in-soft);color:var(--in-ink)}
+.cat-ico svg.lucide{width:20px;height:20px}
+.mov .info{flex:1;min-width:0}
+.mov .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov .s{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov .m{font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mov .m.in{color:var(--good)}
+.dia{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.4px;margin:22px 6px 8px}
+.vacio{text-align:center;color:var(--muted);padding:36px 20px}
+.vacio svg.lucide{width:36px;height:36px;stroke-width:1.4;margin-bottom:8px;color:var(--muted)}
+
+.buscador{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 14px;box-shadow:var(--shadow);margin-top:12px}
+.buscador svg.lucide{color:var(--muted);width:20px;height:20px}
+.buscador input{flex:1;border:0;background:none;padding:14px 0;outline:none;min-width:0}
+.filtro{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:8px 10px 8px 14px;border-radius:999px;
+  background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:14px}
+.filtro svg.lucide{width:16px;height:16px}
+.resumen-filtro{margin:12px 4px 0;color:var(--ink-2);font-size:15px}
+
+/* Segmentado */
+.seg{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:4px;background:var(--surface-2);padding:4px;border-radius:14px}
+.seg button{height:44px;border-radius:11px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button svg.lucide{width:18px;height:18px}
+.seg button.sel{background:var(--seg-sel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg.tipo button.sel[data-t="gasto"]{color:var(--accent)}
+.seg.tipo button.sel[data-t="ingreso"]{color:var(--in-ink)}
+
+/* Gráfico */
+.leyenda{display:flex;gap:16px;margin-top:12px;font-size:14px;color:var(--ink-2)}
+.leyenda span{display:flex;align-items:center;gap:6px}
+.leyenda i.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart{margin-top:10px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ytick{fill:var(--muted);font-size:10px}
+.chart .grupo{cursor:pointer}
+.chart .grupo path{transition:opacity .2s}
+.chart .grupo:not(.sel) path{opacity:.4}
+.chart .grupo:hover path{opacity:.85}
+.chart .grupo.sel path{opacity:1}
+.chart path.in{fill:var(--in)}
+.chart path.out{fill:var(--out)}
+.chart .lab{fill:var(--muted);font-size:11px}
+.chart .grupo.sel .lab{fill:var(--ink);font-weight:600}
+.chart-det{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:grid;gap:6px;font-size:15px}
+.chart-det div{display:flex;justify-content:space-between;color:var(--ink-2)}
+.chart-det b{color:var(--ink);font-variant-numeric:tabular-nums}
+.chart-det .good{color:var(--good)} .chart-det .bad{color:var(--bad)}
+
+/* Categorías */
+.catrow{display:grid;grid-template-columns:42px 1fr auto;gap:4px 14px;align-items:center;width:100%;text-align:left;padding:12px 0;border-bottom:1px solid var(--line)}
+.catrow:last-child{border-bottom:0;padding-bottom:0}
+.catrow .cat-ico{grid-row:span 2}
+.catrow .n{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catrow .a{font-weight:650;text-align:right;font-variant-numeric:tabular-nums}
+.catrow .mini{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.catrow .mini i{display:block;height:100%;background:var(--out);border-radius:99px}
+.catrow .mini i.in{background:var(--in)}
+.catrow .d{font-size:13px;font-weight:600;text-align:right;white-space:nowrap}
+.d.good{color:var(--good)} .d.bad{color:var(--bad)} .d.neutral{color:var(--muted)}
+
+/* Ajustes */
+.campo-label{display:block;font-size:14px;color:var(--muted);font-weight:500;margin:0 0 8px}
+.input{width:100%;padding:15px 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface-2);font-size:18px;outline:none}
+.input:focus{border-color:var(--accent);background:var(--surface)}
+.opciones{display:grid;gap:8px}
+.opcion{display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:14px;background:var(--surface-2);font-weight:600;font-size:17px;border:1.5px solid transparent}
+.opcion.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opcion svg.lucide{color:var(--accent)}
+.mis-cats .fila-cat{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mis-cats .fila-cat:last-child{border-bottom:0}
+.mis-cats .fila-cat span.nm{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mis-cats .fila-cat small{color:var(--muted);font-weight:500;font-size:13px;display:block}
+.mis-cats .fila-cat .icon-btn{color:var(--ink-2);width:44px;height:44px}
+.mis-cats .fila-cat .icon-btn.borrar{color:var(--bad)}
+.mis-cats .fila-cat .tag-propia{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;background:var(--surface-2);color:var(--muted);font-size:11px;font-weight:600;vertical-align:2px}
+.mis-cats .sin{color:var(--muted);font-size:15px;margin:0 0 4px}
+.nota-pie{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+
+/* Botones */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:56px;border-radius:16px;font-size:17px;font-weight:650}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary.in{background:var(--in-ink);color:#fff}
+.btn.primary:active{filter:brightness(.92)}
+.btn.primary:disabled{opacity:.55}
+.btn.ghost-danger{color:var(--bad);background:var(--bad-soft);margin-top:20px}
+.btn.secondary{background:var(--surface-2);color:var(--ink)}
+
+/* Barra inferior */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;height:68px}
+.tb{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted);height:100%;justify-content:center}
+.tb.act{color:var(--accent)}
+.tb-add{justify-self:center;width:58px;height:58px;border-radius:20px;background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 40%,transparent);transform:translateY(-10px)}
+.tb-add svg.lucide{width:28px;height:28px;stroke-width:2.4}
+.tb-add:active{transform:translateY(-10px) scale(.95)}
+
+/* Hoja inferior */
+.backdrop{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s}
+.backdrop.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;max-width:560px;margin:0 auto;height:94vh;
+  background:var(--surface);border-radius:24px 24px 0 0;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
+  display:flex;flex-direction:column}
+@supports (height:94dvh){.sheet{height:94dvh}}
+.sheet.open{transform:none}
+.grip{width:40px;height:5px;border-radius:9px;background:var(--line);margin:8px auto 0;flex:none}
+.paso{display:flex;flex-direction:column;flex:1;min-height:0}
+.sheet-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:6px 10px;flex:none}
+.sheet-head h3{margin:0;text-align:center;font-size:17px;font-weight:650}
+.sheet-body{flex:1;overflow-y:auto;padding:4px 20px 20px;-webkit-overflow-scrolling:touch}
+.sheet-foot{padding:12px 20px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);flex:none}
+.aviso{margin:0 0 10px;text-align:center;color:var(--bad);font-weight:600;font-size:15px}
+.paso1-top{padding:2px 20px 0;flex:none}
+.monto-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;padding:0 20px}
+.monto{font-size:54px;font-weight:750;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.monto.cero{color:var(--muted)}
+.monto.in:not(.cero){color:var(--in-ink)}
+.monto.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+.monto-hint{color:var(--muted);font-size:15px;margin-top:2px}
+.btn-voz{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:10px 18px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:650;font-size:16px}
+.btn-voz svg.lucide{width:20px;height:20px}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 16px 10px;flex:none}
+.keypad button{height:60px;border-radius:16px;font-size:26px;font-weight:550;display:grid;place-items:center}
+.keypad button:active{background:var(--surface-2)}
+.paso1-foot{padding:4px 20px calc(16px + env(safe-area-inset-bottom));flex:none}
+.monto-mini{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 18px;border-radius:16px;background:var(--surface-2);margin-bottom:22px;text-align:left}
+.monto-mini b{font-size:28px;letter-spacing:-.8px;display:block}
+.monto-mini small{display:block;color:var(--muted);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.monto-mini.in b{color:var(--in-ink)}
+.monto-mini > span:last-child{color:var(--accent);font-weight:600;font-size:15px;display:flex;align-items:center;gap:4px}
+.monto-mini > span:last-child svg.lucide{width:16px;height:16px}
+.banner-voz{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;background:var(--accent-soft);margin-bottom:18px;font-size:15px}
+.banner-voz svg.lucide{color:var(--accent);margin-top:1px}
+.banner-voz q{display:block;color:var(--ink-2);font-style:italic;margin-top:4px}
+.sheet .label{margin:0 0 10px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:22px;scrollbar-width:none}
+.chip{display:flex;align-items:center;gap:8px;padding:9px 14px 9px 10px;border-radius:999px;background:var(--surface-2);font-size:15px;font-weight:600;white-space:nowrap;border:1.5px solid transparent}
+.chip svg.lucide{width:18px;height:18px;color:var(--accent)}
+.chip.in svg.lucide{color:var(--in-ink)}
+.chip.sel{border-color:var(--accent);background:var(--accent-soft)}
+.catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px}
+.catbtn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 12px;border-radius:16px;background:var(--surface-2);
+  font-size:13px;font-weight:600;line-height:1.2;text-align:center;border:1.5px solid transparent;min-height:96px}
+.catbtn .cat-ico{width:40px;height:40px;background:var(--surface)}
+.catbtn.sel{border-color:var(--accent);background:var(--accent-soft)}
+.catbtn.sel .cat-ico{background:var(--accent);color:var(--accent-ink)}
+.catbtn.sel .cat-ico.in{background:var(--in-ink);color:#fff}
+.catbtn.nueva{background:none;border:1.5px dashed color-mix(in srgb,var(--muted) 60%,transparent);color:var(--accent)}
+.catbtn.nueva .cat-ico{background:var(--accent-soft)}
+#fecha{margin-top:10px}
+
+/* Voz */
+.voz-wrap{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:4px 20px 20px}
+.mic{width:124px;height:124px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;margin:18px 0 18px;position:relative;flex:none;
+  box-shadow:0 10px 30px color-mix(in srgb,var(--accent) 35%,transparent)}
+.mic svg.lucide{width:50px;height:50px;stroke-width:2}
+.mic.on{background:var(--bad)}
+.mic.on::before,.mic.on::after{content:'';position:absolute;inset:0;border-radius:50%;border:3px solid var(--bad);animation:onda 1.6s infinite}
+.mic.on::after{animation-delay:.8s}
+@keyframes onda{from{transform:scale(1);opacity:.7}to{transform:scale(1.55);opacity:0}}
+.voz-estado{font-weight:700;font-size:21px;text-align:center;margin:0 0 4px}
+.voz-sub{color:var(--ink-2);text-align:center;font-size:15px;margin:0 0 18px;max-width:340px}
+#vozTexto{width:100%;min-height:90px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface-2);font-size:18px;resize:none;outline:none}
+#vozTexto:focus{border-color:var(--accent);background:var(--surface)}
+.ejemplos{width:100%;margin-top:18px}
+.ejemplos p{margin:0 0 8px;font-size:14px;color:var(--muted);font-weight:600}
+.ejemplos button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:12px;background:var(--surface-2);margin-bottom:6px;font-size:15px;color:var(--ink-2)}
+
+/* Onboarding, diálogos, toast */
+.full{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:24px}
+.full-in{max-width:420px;width:100%;margin:0 auto}
+.logo{width:64px;height:64px;border-radius:20px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin-bottom:24px}
+.logo svg.lucide{width:32px;height:32px}
+.full h1{font-size:30px;letter-spacing:-.8px;margin:0 0 6px}
+.full p{color:var(--ink-2);margin:0 0 28px}
+.dialog-w{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:20px}
+.dialog{background:var(--surface);border-radius:22px;padding:24px;width:100%;max-width:380px;text-align:center}
+.dialog h4{margin:0 0 6px;font-size:19px}
+.dialog p{margin:0 0 20px;color:var(--ink-2)}
+.dialog .fila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dialog .btn.si{background:var(--bad);color:#fff}
+.dialog.form{text-align:left;max-height:90vh;overflow-y:auto}
+.dialog.form h4{margin-bottom:16px}
+.dialog .err{color:var(--bad);font-weight:600;font-size:14px;margin:-8px 0 12px}
+.iconos{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:180px;overflow-y:auto;margin:0 0 20px}
+.iconos button{aspect-ratio:1;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);color:var(--ink-2);border:1.5px solid transparent}
+.iconos button.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.prev-cat{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--surface-2);margin:0 0 16px;font-weight:600;min-height:66px}
+.prev-cat .vacio-n{color:var(--muted);font-weight:500}
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,20px);opacity:0;z-index:40;pointer-events:none;
+  background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:600;font-size:15px;display:flex;gap:8px;align-items:center;
+  transition:opacity .2s,transform .2s;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast svg.lucide{width:18px;height:18px}
+.error{display:flex;gap:12px;align-items:center;margin-bottom:12px;padding:14px 16px;border-radius:16px;background:var(--bad-soft);color:var(--bad);font-weight:600;font-size:15px}
+.error button{margin-left:auto;font-weight:700;text-decoration:underline}
+.skel{color:transparent!important;background:var(--surface-2);border-radius:10px;animation:pulso 1.2s infinite}
+@keyframes pulso{50%{opacity:.5}}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="quien-w">
+      <button class="quien-btn" id="quienBtn" aria-haspopup="menu" aria-expanded="false">
+        <span class="avatar" id="avatar">?</span>
+        <span class="hola">Hola,<b><span id="holaNombre">—</span><i data-lucide="chevron-down"></i></b></span>
+      </button>
+      <div class="quien-menu" id="quienMenu" role="menu" hidden></div>
+    </div>
+    <div class="mes-sel">
+      <button class="icon-btn" id="mesPrev" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button>
+      <span id="mesTitulo">—</span>
+      <button class="icon-btn" id="mesNext" aria-label="Mes siguiente"><i data-lucide="chevron-right"></i></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="demo" id="demo" hidden><i data-lucide="flask-conical"></i>Modo prueba: los datos quedan solo en este dispositivo.</div>
+  <div class="error" id="error" hidden><i data-lucide="wifi-off"></i>Sin conexión<button id="btnReintentar">Reintentar</button></div>
+
+  <!-- INICIO -->
+  <section class="tab" id="tInicio">
+    <div class="instalar" id="instalar" hidden>
+      <span class="acc-ico"><i data-lucide="download"></i></span>
+      <span><b>Instalá la app</b><small>Queda en el celular como cualquier aplicación</small></span>
+      <button id="btnInstalar">Instalar</button>
+    </div>
+    <div class="card">
+      <p class="label" id="balLabel">Balance del mes</p>
+      <p class="hero-num" id="balNum"><span class="skel">$000.000</span></p>
+      <div class="flujo">
+        <div><span><i class="dot in"></i>Ingresos</span><b id="balIn">—</b></div>
+        <div><span><i class="dot out"></i>Gastos</span><b id="balOut">—</b></div>
+      </div>
+      <div id="balExtra"></div>
+    </div>
+
+    <div class="acciones">
+      <button class="accion" id="accVoz"><span class="acc-ico"><i data-lucide="mic"></i></span><span><b>Decilo con la voz</b><small>Gasto o ingreso</small></span></button>
+      <button class="accion" id="accIngreso"><span class="acc-ico in"><i data-lucide="arrow-down-left"></i></span><span><b>Cargar ingreso</b><small>Jubilación, sueldo…</small></span></button>
+    </div>
+
+    <div class="card">
+      <p class="label" id="gasLabel">Gastado este mes</p>
+      <p class="num-md" id="gasNum">—</p>
+      <div id="gasDelta"></div>
+      <div id="presBox"></div>
+    </div>
+    <div class="tiles">
+      <div class="tile" id="tileProy"></div>
+      <div class="tile" id="tileVs"></div>
+    </div>
+    <div class="sec-head"><h2>Últimos movimientos</h2><button data-ir="movs">Ver todos</button></div>
+    <div class="card list" id="ultimos"></div>
+  </section>
+
+  <!-- ANÁLISIS -->
+  <section class="tab" id="tAnalisis" hidden>
+    <div class="card">
+      <h2>Ingresos y gastos</h2>
+      <p class="label">Últimos 6 meses · tocá un mes para verlo</p>
+      <div class="leyenda"><span><i class="dot in"></i>Ingresos</span><span><i class="dot out"></i>Gastos</span></div>
+      <div class="chart" id="chart"></div>
+      <div class="chart-det" id="chartDet"></div>
+    </div>
+    <div class="card">
+      <h2>Promedio por mes</h2>
+      <p class="label" id="promSub">Meses completos con datos</p>
+      <div class="chart-det" id="promDet" style="border-top:0;padding-top:4px"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px">
+        <h2>Por categoría</h2>
+      </div>
+      <div class="seg tipo" id="segCat" style="--n:2;margin:10px 0 6px">
+        <button data-t="gasto" class="sel">Gastos</button><button data-t="ingreso">Ingresos</button>
+      </div>
+      <p class="label" id="catSub" style="margin:8px 0 4px">Comparado con el mes anterior</p>
+      <div id="catList"></div>
+    </div>
+  </section>
+
+  <!-- MOVIMIENTOS -->
+  <section class="tab" id="tMovs" hidden>
+    <div class="seg" id="segMovs" style="--n:3">
+      <button data-t="todos" class="sel">Todos</button><button data-t="gasto">Gastos</button><button data-t="ingreso">Ingresos</button>
+    </div>
+    <label class="buscador"><i data-lucide="search"></i><input id="buscar" placeholder="Buscar movimientos" autocomplete="off"></label>
+    <button class="filtro" id="filtro" hidden></button>
+    <p class="resumen-filtro" id="resFiltro"></p>
+    <div id="movs"></div>
+  </section>
+
+  <!-- AJUSTES -->
+  <section class="tab" id="tAjustes" hidden>
+    <div class="card">
+      <h2>Presupuesto mensual de gastos</h2>
+      <p class="label" style="margin:4px 0 16px">Cuánto planean gastar por mes en total</p>
+      <input class="input" id="presInput" inputmode="numeric" autocomplete="off" placeholder="$ 0">
+      <button class="btn primary" id="btnPres" style="margin-top:12px">Guardar presupuesto</button>
+    </div>
+    <div class="card">
+      <h2>Apariencia</h2>
+      <p class="label" style="margin:4px 0 14px">Automático sigue la configuración del celular</p>
+      <div class="seg" id="segTema" style="--n:3">
+        <button data-tema="auto"><i data-lucide="smartphone"></i>Auto</button>
+        <button data-tema="light"><i data-lucide="sun"></i>Claro</button>
+        <button data-tema="dark"><i data-lucide="moon"></i>Oscuro</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Categorías</h2>
+      <p class="label" style="margin:4px 0 14px">Tocá el lápiz para cambiar nombre o ícono. Los cambios se ven en los dos celulares.</p>
+      <div class="seg tipo" id="segAjCat" style="--n:2;margin-bottom:8px">
+        <button data-t="gasto" class="sel">Gastos</button><button data-t="ingreso">Ingresos</button>
+      </div>
+      <div class="mis-cats" id="misCats"></div>
+      <button class="btn secondary" id="btnNuevaCat" style="margin-top:12px"><i data-lucide="plus"></i>Nueva categoría</button>
+      <button class="link" id="btnRestaurar" style="display:block;margin:10px auto 0" hidden>Restaurar categorías originales</button>
+    </div>
+    <div class="card">
+      <h2>¿Quién usa este celular?</h2>
+      <p class="label" style="margin:4px 0 16px">Lo que cargues queda a tu nombre</p>
+      <div class="opciones" id="ajPersonas"></div>
+    </div>
+    <p class="nota-pie">Gastos de casa · los datos se guardan en Google Sheets</p>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <div class="tabbar-in">
+    <button class="tb act" data-tab="inicio"><i data-lucide="house"></i>Inicio</button>
+    <button class="tb" data-tab="analisis"><i data-lucide="chart-column"></i>Análisis</button>
+    <button class="tb-add" id="btnNuevo" aria-label="Cargar movimiento"><i data-lucide="plus"></i></button>
+    <button class="tb" data-tab="movs"><i data-lucide="list"></i>Movimientos</button>
+    <button class="tb" data-tab="ajustes"><i data-lucide="settings"></i>Ajustes</button>
+  </div>
+</nav>
+
+<!-- Hoja para cargar / editar -->
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="tit1">
+  <div class="grip"></div>
+
+  <!-- Paso 1: tipo y monto -->
+  <div class="paso" id="paso1">
+    <div class="sheet-head">
+      <button class="icon-btn" id="cerrar1" aria-label="Cerrar"><i data-lucide="x"></i></button>
+      <h3 id="tit1">Nuevo movimiento</h3><span></span>
+    </div>
+    <div class="paso1-top">
+      <div class="seg tipo" id="segTipo" style="--n:2">
+        <button data-t="gasto"><i data-lucide="arrow-up-right"></i>Gasto</button>
+        <button data-t="ingreso"><i data-lucide="arrow-down-left"></i>Ingreso</button>
+      </div>
+    </div>
+    <div class="monto-wrap">
+      <div class="monto cero" id="montoVer">$0</div>
+      <div class="monto-hint" id="montoHint">¿Cuánto gastaste?</div>
+      <button class="btn-voz" id="btnVoz"><i data-lucide="mic"></i>Decilo con la voz</button>
+    </div>
+    <div class="keypad" id="keypad"></div>
+    <div class="paso1-foot"><button class="btn primary" id="btnContinuar">Continuar</button></div>
+  </div>
+
+  <!-- Paso voz -->
+  <div class="paso" id="pasoVoz" hidden>
+    <div class="sheet-head">
+      <button class="icon-btn" id="atrasVoz" aria-label="Volver"><i data-lucide="chevron-left"></i></button>
+      <h3>Decilo con la voz</h3>
+      <button class="icon-btn" id="cerrarVoz" aria-label="Cerrar"><i data-lucide="x"></i></button>
+    </div>
+    <div class="voz-wrap">
+      <button class="mic" id="mic" aria-label="Hablar"><i data-lucide="mic"></i></button>
+      <p class="voz-estado" id="vozEstado">Tocá el micrófono y hablá</p>
+      <p class="voz-sub" id="vozSub"></p>
+      <textarea id="vozTexto" rows="3" placeholder="Acá aparece lo que digas. También podés escribirlo."></textarea>
+      <div class="ejemplos">
+        <p>Podés decir, por ejemplo:</p>
+        <button data-ej="Gasté 15 mil en el supermercado">“Gasté 15 mil en el supermercado”</button>
+        <button data-ej="Cobré la jubilación, 450 mil pesos">“Cobré la jubilación, 450 mil pesos”</button>
+        <button data-ej="Ayer pagué la luz, 28.500">“Ayer pagué la luz, 28.500”</button>
+      </div>
+    </div>
+    <div class="sheet-foot"><button class="btn primary" id="btnUsarTexto"><i data-lucide="check"></i>Listo</button></div>
+  </div>
+
+  <!-- Paso 2: categoría y detalles -->
+  <div class="paso" id="paso2" hidden>
+    <div class="sheet-head">
+      <button class="icon-btn" id="atras2" aria-label="Volver"><i data-lucide="chevron-left"></i></button>
+      <h3 id="tit2">Nuevo gasto</h3>
+      <button class="icon-btn" id="cerrar2" aria-label="Cerrar"><i data-lucide="x"></i></button>
+    </div>
+    <div class="sheet-body" id="cuerpo2">
+      <div class="banner-voz" id="bannerVoz" hidden><i data-lucide="sparkles"></i><div><b>Revisá que esté bien y tocá Guardar.</b><q id="oido"></q></div></div>
+      <button class="monto-mini" id="montoMini"><span><small id="montoMiniT">Gasto</small><b id="montoMiniV">$0</b></span><span><i data-lucide="pencil"></i>Cambiar</span></button>
+      <div id="recBox"><p class="label">Usadas hace poco</p><div class="chips" id="recientes"></div></div>
+      <p class="label">Categoría</p>
+      <div class="catgrid" id="catgrid"></div>
+      <label class="label" for="nota" style="display:block">Detalle (opcional)</label>
+      <input class="input" id="nota" maxlength="100" autocomplete="off" placeholder="Ej: Netflix, Coto, ABL" style="margin:10px 0 22px">
+      <p class="label">Fecha</p>
+      <div class="seg" id="segFecha">
+        <button data-f="hoy">Hoy</button><button data-f="ayer">Ayer</button><button data-f="otro">Otro día</button>
+      </div>
+      <input class="input" type="date" id="fecha" hidden>
+      <button class="btn ghost-danger" id="btnBorrar" hidden><i data-lucide="trash-2"></i>Borrar</button>
+    </div>
+    <div class="sheet-foot">
+      <p class="aviso" id="aviso" hidden></p>
+      <button class="btn primary" id="btnGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Primera vez -->
+<div class="full" id="bienvenida" hidden>
+  <div class="full-in">
+    <div class="logo"><i data-lucide="wallet"></i></div>
+    <h1>Gastos de casa</h1>
+    <p>Para empezar, contanos quién usa este celular.</p>
+    <div class="opciones" id="bienPersonas"></div>
+  </div>
+</div>
+
+<div class="dialog-w" id="dialogo" hidden>
+  <div class="dialog">
+    <h4 id="dialogoTit"></h4>
+    <p id="dialogoTxt"></p>
+    <div class="fila"><button class="btn secondary" id="dNo">Cancelar</button><button class="btn si" id="dSi">Borrar</button></div>
+  </div>
+</div>
+
+<!-- Nueva categoría -->
+<div class="dialog-w" id="dlgCat" hidden>
+  <div class="dialog form" role="dialog" aria-modal="true" aria-labelledby="dlgCatTit">
+    <h4 id="dlgCatTit">Nueva categoría</h4>
+    <div class="seg tipo" id="ncTipo" style="--n:2;margin-bottom:16px">
+      <button data-t="gasto">Gasto</button><button data-t="ingreso">Ingreso</button>
+    </div>
+    <div class="prev-cat"><span class="cat-ico" id="ncIco"></span><span id="ncPrev"></span></div>
+    <label class="campo-label" for="ncNombre">Nombre</label>
+    <input class="input" id="ncNombre" maxlength="30" autocomplete="off" placeholder="Ej: Colegio, Kiosco, Peluquería" style="margin-bottom:18px">
+    <p class="campo-label">Ícono</p>
+    <div class="iconos" id="ncIconos"></div>
+    <p class="err" id="ncErr" hidden></p>
+    <div class="fila"><button class="btn secondary" id="ncNo">Cancelar</button><button class="btn primary" id="ncSi">Crear</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"><i data-lucide="circle-check"></i><span id="toastTxt"></span></div>
+
+<script>
+// Cuando la app se publica fuera de Google (versión PWA en GitHub Pages), el link de la
+// aplicación web de Apps Script se configura en config.js.
+const API_URL = String(window.API_URL || '').trim();
+
+// ================= Categorías =================
+const CATS_GASTO = [
+  ['Supermercado', 'shopping-cart'], ['Almacén y verdulería', 'apple'], ['Restaurantes y delivery', 'utensils'],
+  ['Farmacia', 'pill'], ['Salud y prepaga', 'heart-pulse'], ['Luz, gas y agua', 'zap'],
+  ['Internet y celular', 'wifi'], ['Streaming', 'tv'], ['Impuestos', 'landmark'],
+  ['Seguros', 'shield'], ['Transporte', 'bus'], ['Auto y nafta', 'fuel'],
+  ['Alquiler y expensas', 'key-round'], ['Casa y mantenimiento', 'house'], ['Gimnasio', 'dumbbell'],
+  ['Clases de inglés', 'languages'], ['Cursos y educación', 'graduation-cap'], ['Ropa y calzado', 'shirt'],
+  ['Cuidado personal', 'scissors'], ['Salidas', 'ticket'], ['Regalos', 'gift'], ['Mascotas', 'paw-print'], ['Otros', 'package']
+].map(([n, i]) => ({ n, i, t: 'gasto' }));
+const CATS_INGRESO = [
+  ['Jubilación', 'hand-coins'], ['Pensión', 'heart-handshake'], ['Sueldo', 'briefcase'],
+  ['Alquiler cobrado', 'key-round'], ['Ventas', 'store'], ['Changas y trabajos', 'hammer'],
+  ['Plazo fijo e intereses', 'percent'], ['Regalo recibido', 'gift'], ['Reintegros', 'rotate-ccw'], ['Otros ingresos', 'circle-plus']
+].map(([n, i]) => ({ n, i, t: 'ingreso' }));
+
+// Palabras que la voz usa para reconocer cada categoría (sin tildes, en minúscula).
+const CLAVES = {
+  'Supermercado': ['super', 'supermercado', 'supermercados', 'coto', 'carrefour', 'jumbo', 'disco', 'changomas', 'vea', 'la anonima', 'chino', 'mercado', 'compras'],
+  'Almacén y verdulería': ['almacen', 'verduleria', 'verdura', 'verduras', 'fruta', 'frutas', 'panaderia', 'pan', 'carniceria', 'carne', 'pollo', 'polleria', 'fiambreria', 'kiosco', 'dietetica', 'huevos', 'leche'],
+  'Restaurantes y delivery': ['restaurante', 'restaurant', 'resto', 'delivery', 'rappi', 'pedidos ya', 'pedidosya', 'pizza', 'pizzeria', 'empanadas', 'comida', 'cafe', 'bar', 'helado', 'heladeria', 'parrilla', 'almuerzo', 'cena', 'cenamos', 'almorzamos', 'hamburguesa'],
+  'Farmacia': ['farmacia', 'farmacity', 'remedio', 'remedios', 'medicamento', 'medicamentos', 'pastillas', 'pastilla'],
+  'Salud y prepaga': ['prepaga', 'osde', 'swiss medical', 'galeno', 'medico', 'medica', 'doctor', 'doctora', 'dentista', 'odontologo', 'analisis', 'consulta', 'obra social', 'kinesiologo', 'kinesiologia', 'pami', 'oculista', 'estudios', 'clinica'],
+  'Luz, gas y agua': ['luz', 'edenor', 'edesur', 'gas', 'metrogas', 'naturgy', 'agua', 'aysa', 'electricidad', 'garrafa'],
+  'Internet y celular': ['internet', 'celular', 'telefono', 'wifi', 'fibertel', 'personal', 'movistar', 'claro', 'telecentro', 'recarga'],
+  'Streaming': ['netflix', 'spotify', 'disney', 'hbo', 'prime video', 'amazon prime', 'youtube', 'paramount', 'star plus', 'flow', 'directv', 'streaming', 'cable'],
+  'Impuestos': ['impuesto', 'impuestos', 'abl', 'rentas', 'arba', 'agip', 'afip', 'arca', 'monotributo', 'patente', 'municipal', 'tasa', 'tasas', 'inmobiliario', 'ganancias', 'bienes personales'],
+  'Seguros': ['seguro', 'seguros', 'poliza'],
+  'Transporte': ['colectivo', 'bondi', 'sube', 'subte', 'tren', 'taxi', 'uber', 'cabify', 'didi', 'remis', 'peaje', 'pasaje', 'pasajes'],
+  'Auto y nafta': ['nafta', 'combustible', 'ypf', 'shell', 'axion', 'auto', 'mecanico', 'gomeria', 'estacionamiento', 'cochera', 'lavadero', 'service', 'gnc', 'gasoil'],
+  'Alquiler y expensas': ['alquiler', 'expensas', 'consorcio'],
+  'Casa y mantenimiento': ['plomero', 'electricista', 'gasista', 'arreglo', 'arreglos', 'ferreteria', 'pintura', 'pintor', 'limpieza', 'muebles', 'mueble', 'electrodomestico', 'heladera', 'lavarropas', 'jardinero'],
+  'Gimnasio': ['gimnasio', 'gym', 'pilates', 'yoga', 'natacion', 'club', 'crossfit', 'entrenador'],
+  'Clases de inglés': ['ingles', 'english', 'clase de ingles', 'clases de ingles'],
+  'Cursos y educación': ['curso', 'cursos', 'clase', 'clases', 'colegio', 'escuela', 'facultad', 'universidad', 'libro', 'libros', 'utiles', 'taller'],
+  'Ropa y calzado': ['ropa', 'zapatillas', 'zapatos', 'remera', 'pantalon', 'campera', 'vestido', 'camisa', 'medias', 'calzado', 'buzo'],
+  'Cuidado personal': ['peluqueria', 'peluquero', 'corte de pelo', 'barberia', 'manicura', 'perfume', 'perfumeria', 'cosmeticos', 'depilacion', 'cuidado personal', 'tintura', 'podologo'],
+  'Salidas': ['cine', 'teatro', 'salida', 'salidas', 'salimos', 'recital', 'show', 'boliche', 'paseo', 'museo', 'entradas'],
+  'Regalos': ['regalo', 'regalos', 'cumpleanos', 'cumple'],
+  'Mascotas': ['veterinaria', 'veterinario', 'perro', 'perra', 'gato', 'gata', 'balanceado', 'mascota', 'mascotas'],
+  'Jubilación': ['jubilacion', 'jubilaciones', 'anses'],
+  'Pensión': ['pension'],
+  'Sueldo': ['sueldo', 'salario', 'aguinaldo', 'quincena', 'bono'],
+  'Alquiler cobrado': ['alquiler', 'inquilino', 'inquilinos'],
+  'Ventas': ['vendi', 'vendimos', 'venta', 'ventas', 'mercado libre'],
+  'Changas y trabajos': ['changa', 'changas', 'trabajo', 'trabajito', 'honorarios', 'factura', 'cliente'],
+  'Plazo fijo e intereses': ['plazo fijo', 'intereses', 'interes', 'dividendos', 'rendimiento'],
+  'Regalo recibido': ['regalo', 'regalaron', 'me regalaron'],
+  'Reintegros': ['reintegro', 'reintegros', 'devolucion', 'reembolso', 'devolvieron']
+};
+// Marcas que se usan como "detalle" cuando se mencionan.
+const MARCAS = { coto: 'Coto', carrefour: 'Carrefour', jumbo: 'Jumbo', disco: 'Disco', changomas: 'Changomás', vea: 'Vea', 'la anonima': 'La Anónima',
+  netflix: 'Netflix', spotify: 'Spotify', disney: 'Disney+', hbo: 'HBO Max', 'prime video': 'Prime Video', 'amazon prime': 'Amazon Prime',
+  youtube: 'YouTube', paramount: 'Paramount+', flow: 'Flow', directv: 'DirecTV', ypf: 'YPF', shell: 'Shell', axion: 'Axion',
+  edenor: 'Edenor', edesur: 'Edesur', metrogas: 'Metrogas', naturgy: 'Naturgy', aysa: 'AySA', osde: 'OSDE', 'swiss medical': 'Swiss Medical',
+  galeno: 'Galeno', pami: 'PAMI', rappi: 'Rappi', 'pedidos ya': 'PedidosYa', pedidosya: 'PedidosYa', uber: 'Uber', cabify: 'Cabify', didi: 'DiDi',
+  abl: 'ABL', arba: 'ARBA', agip: 'AGIP', afip: 'AFIP', arca: 'ARCA', movistar: 'Movistar', personal: 'Personal', claro: 'Claro',
+  fibertel: 'Fibertel', telecentro: 'Telecentro', anses: 'ANSES', sube: 'SUBE', farmacity: 'Farmacity', 'mercado libre': 'Mercado Libre' };
+
+const ICONOS_EXTRA = ['tag', 'baby', 'book-open', 'briefcase', 'coffee', 'cake', 'plane', 'hammer', 'sofa', 'smartphone',
+  'laptop', 'music', 'dog', 'cat', 'flower-2', 'bike', 'beer', 'pizza', 'stethoscope', 'glasses', 'wrench', 'credit-card',
+  'banknote', 'gamepad-2', 'school', 'church', 'sparkles', 'trophy', 'car', 'plug', 'droplet', 'flame', 'umbrella',
+  'piggy-bank', 'heart', 'store'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+// ================= Utilidades =================
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const fechaStr = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const hoy = () => fechaStr(new Date());
+const ayer = () => { const d = new Date(); d.setDate(d.getDate() - 1); return fechaStr(d); };
+const mesDe = f => f.slice(0, 7);
+const aFecha = f => { const [y, m, d] = f.split('-').map(Number); return new Date(y, m - 1, d); };
+const plata = n => (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n)).toLocaleString('es-AR');
+const plataCorta = n => n >= 1e6 ? '$' + (n / 1e6).toLocaleString('es-AR', { maximumFractionDigits: 1 }) + 'M'
+  : n >= 1e3 ? '$' + Math.round(n / 1e3) + 'k' : '$' + Math.round(n);
+const suma = arr => arr.reduce((a, g) => a + g.monto, 0);
+const esIn = g => g.tipo === 'ingreso';
+const ic = n => `<i data-lucide="${n}"></i>`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+function sumarMes(mes, n) {
+  const [y, m] = mes.split('-').map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+}
+const nombreMes = mes => MESES[Number(mes.slice(5)) - 1];
+const mesCorto = mes => cap(nombreMes(mes).slice(0, 3));
+function etiquetaDia(f) {
+  if (f === hoy()) return 'Hoy';
+  if (f === ayer()) return 'Ayer';
+  return aFecha(f).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+function leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function grabar(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function vibrar() { try { navigator.vibrate && navigator.vibrate(8); } catch (e) {} }
+function iconos() { if (window.lucide) lucide.createIcons(); }
+
+// Categorías visibles: las de fábrica (con los cambios de nombre/ícono que hayan hecho,
+// sin las borradas) más las propias. "base" es el nombre original de una de fábrica.
+const CATS_FABRICA = CATS_GASTO.concat(CATS_INGRESO);
+const todasCats = tipo => {
+  const filas = (S.datos && S.datos.categorias) || [];
+  const cambios = {};
+  filas.filter(f => f.base).forEach(f => cambios[f.base] = f);
+  const fabrica = CATS_FABRICA.map(c => {
+    const x = cambios[c.n];
+    if (!x) return Object.assign({ base: c.n }, c);
+    if (x.oculta) return null;
+    return { n: x.n, i: x.i || c.i, t: c.t, base: c.n };
+  }).filter(Boolean);
+  const propias = filas.filter(f => !f.base).map(f => ({ n: f.n, i: f.i || 'tag', t: f.t || 'gasto', base: '' }));
+  const all = fabrica.concat(propias);
+  return tipo ? all.filter(c => c.t === tipo) : all;
+};
+// El ícono también se busca entre las borradas, para los movimientos viejos.
+const iconoDe = c => (todasCats().find(x => x.n === c) || CATS_FABRICA.find(x => x.n === c) || { i: 'package' }).i;
+const hayCambiosFabrica = () => ((S.datos && S.datos.categorias) || []).some(f => f.base);
+
+// ================= Conexión con la planilla =================
+const EN_GOOGLE = !!(window.google && google.script && google.script.run);
+const MODO_PRUEBA = !EN_GOOGLE && !API_URL;
+// Modo prueba: datos guardados solo en el navegador (para ver la app sin instalarla).
+const prueba = (() => {
+  let db = null;
+  try { db = JSON.parse(localStorage.getItem('gastos.prueba3')); } catch (e) {}
+  db = db || { movs: [], presupuesto: 0, categorias: [] };
+  const save = () => grabar('gastos.prueba3', JSON.stringify(db));
+  const datos = mes => {
+    const meses = [0, 1, 2, 3, 4, 5].map(i => sumarMes(mes, i - 5));
+    const del = m => db.movs.filter(g => mesDe(g.fecha) === m);
+    return {
+      movs: del(mes), anterior: del(meses[4]),
+      historial: meses.map(m => ({ mes: m, gastos: suma(del(m).filter(g => !esIn(g))), ingresos: suma(del(m).filter(esIn)) })),
+      presupuesto: db.presupuesto, categorias: db.categorias, personas: ['Papá', 'Mamá']
+    };
+  };
+  return {
+    getDatos: datos,
+    agregarGasto(g, mes) { db.movs.push(Object.assign({}, g, { id: String(Date.now()) + Math.random(), cargado: new Date().toISOString() })); save(); return datos(mes); },
+    editarGasto(g, mes) { const i = db.movs.findIndex(x => x.id === g.id); if (i >= 0) Object.assign(db.movs[i], g); save(); return datos(mes); },
+    borrarGasto(id, mes) { db.movs = db.movs.filter(x => x.id !== id); save(); return datos(mes); },
+    setPresupuesto(m, mes) { db.presupuesto = m; save(); return datos(mes); },
+    agregarCategoria(c, mes) {
+      const x = db.categorias.find(x => x.n.toLowerCase() === c.n.trim().toLowerCase());
+      if (x && !x.oculta) throw new Error('Ya existe esa categoría');
+      if (x) { x.oculta = false; x.i = c.i; } else db.categorias.push({ n: c.n.trim(), i: c.i, t: c.t, base: '', oculta: false });
+      save(); return datos(mes);
+    },
+    editarCategoria(anterior, c, mes) {
+      const nuevo = c.n.trim();
+      if (nuevo !== anterior && db.categorias.some(x => x.n.toLowerCase() === nuevo.toLowerCase())) throw new Error('Ya existe esa categoría');
+      const x = db.categorias.find(x => x.n === anterior);
+      if (x) { x.n = nuevo; x.i = c.i; } else db.categorias.push({ n: nuevo, i: c.i, t: c.t, base: c.base, oculta: false });
+      if (nuevo !== anterior) db.movs.forEach(g => { if (g.categoria === anterior) g.categoria = nuevo; });
+      save(); return datos(mes);
+    },
+    borrarCategoria(c, mes) {
+      const x = db.categorias.find(x => x.n === c.n);
+      if (c.base) { if (x) x.oculta = true; else db.categorias.push({ n: c.n, i: c.i, t: c.t, base: c.base, oculta: true }); }
+      else db.categorias = db.categorias.filter(x => x.n !== c.n);
+      save(); return datos(mes);
+    },
+    restaurarCategorias(mes) {
+      db.categorias.filter(x => x.base && x.n !== x.base).forEach(x => db.movs.forEach(g => { if (g.categoria === x.n) g.categoria = x.base; }));
+      db.categorias = db.categorias.filter(x => !x.base);
+      save(); return datos(mes);
+    }
+  };
+})();
+function api(fn, ...args) {
+  if (EN_GOOGLE) {
+    return new Promise((ok, mal) => google.script.run.withSuccessHandler(ok).withFailureHandler(mal)[fn](...args));
+  }
+  if (API_URL) {
+    return fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn, args }) })
+      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(r.error); return r.data; });
+  }
+  return new Promise((ok, mal) => setTimeout(() => { try { ok(prueba[fn](...args)); } catch (e) { mal(e); } }, 200));
+}
+
+// ================= Estado =================
+const S = { mes: mesDe(hoy()), datos: null, yo: leer('gastos.quien'), tab: 'inicio',
+  filtroCat: null, filtroTipo: 'todos', catTipo: 'gasto', ajTipo: 'gasto', busqueda: '', form: null, ocupado: false };
+
+async function cargar() {
+  $('error').hidden = true;
+  try {
+    S.datos = await api('getDatos', S.mes);
+    if (!S.yo || !S.datos.personas.includes(S.yo)) pedirQuien();
+    render();
+  } catch (e) {
+    $('error').hidden = false;
+    iconos();
+  }
+}
+
+// ================= Cálculos =================
+function calc() {
+  const d = S.datos;
+  const esActual = S.mes === mesDe(hoy());
+  const diaHoy = new Date().getDate();
+  const [y, m] = S.mes.split('-').map(Number);
+  const diasMes = new Date(y, m, 0).getDate();
+  const gastos = d.movs.filter(g => !esIn(g)), ingresos = d.movs.filter(esIn);
+  const G = suma(gastos), I = suma(ingresos);
+  // En el mes en curso se compara contra el mismo período del mes anterior (del 1 al día de hoy).
+  const antG = d.anterior.filter(g => !esIn(g));
+  const antComp = esActual ? antG.filter(g => Number(g.fecha.slice(8)) <= diaHoy) : antG;
+  const antIn = d.anterior.filter(esIn);
+  const prev = suma(antComp);
+  // Proyección de gastos: lo gastado + lo que gastaron el mes anterior en los días que faltan.
+  const prevTotal = suma(antG);
+  const conAnterior = esActual && prevTotal > 0;
+  const proy = !esActual ? G : conAnterior ? G + (prevTotal - prev) : G / diaHoy * diasMes;
+  return { esActual, diaHoy, diasMes, gastos, ingresos, G, I, balance: I - G, prev, antComp, antIn, proy, conAnterior,
+    p: d.presupuesto, mesAnt: sumarMes(S.mes, -1) };
+}
+
+// ================= Render =================
+function render() {
+  if (!S.datos) return;
+  $('holaNombre').textContent = S.yo || '—';
+  $('avatar').textContent = S.yo ? S.yo.charAt(0).toUpperCase() : '?';
+  $('mesTitulo').textContent = cap(nombreMes(S.mes)) + (S.mes.slice(0, 4) != new Date().getFullYear() ? ' ' + S.mes.slice(2, 4) : '');
+  $('mesNext').disabled = S.mes >= mesDe(hoy());
+  $('demo').hidden = !MODO_PRUEBA;
+  renderInicio(); renderAnalisis(); renderMovs(); renderAjustes();
+  iconos();
+}
+
+function animarNumero(el, hasta) {
+  const desde = el._v == null ? 0 : el._v;
+  el._v = hasta;
+  const t0 = performance.now(), dur = 600;
+  const paso = t => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = plata(desde + (hasta - desde) * e);
+    if (k < 1) requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
+}
+function anchos() {
+  requestAnimationFrame(() => document.querySelectorAll('[data-w]').forEach(el => el.style.width = el.dataset.w + '%'));
+}
+
+function renderInicio() {
+  const c = calc(), d = S.datos;
+
+  // Balance: ingresos - gastos
+  $('balLabel').textContent = 'Balance de ' + nombreMes(S.mes);
+  animarNumero($('balNum'), c.balance);
+  $('balNum').className = 'hero-num' + (c.I > 0 ? (c.balance >= 0 ? ' pos' : ' neg') : '');
+  $('balIn').textContent = plata(c.I);
+  $('balOut').textContent = plata(c.G);
+  let bx;
+  if (c.I > 0) {
+    const pctG = Math.min(100, c.G / c.I * 100);
+    bx = `<div class="reparto" role="img" aria-label="Gastaron el ${Math.round(c.G / c.I * 100)}% de lo que ingresó">
+        <i class="out" data-w="${pctG}"></i>${pctG < 100 ? `<i class="resto" data-w="${100 - pctG}"></i>` : ''}</div>
+      <div class="bal-sub">${c.balance >= 0
+        ? `Ahorraron <b>${plata(c.balance)}</b>: el <b>${Math.round(c.balance / c.I * 100)}%</b> de lo que ingresó${c.esActual ? ' hasta hoy' : ''}`
+        : `Gastaron <b>${plata(-c.balance)}</b> más de lo que ingresó${c.esActual ? ' hasta hoy' : ''}`}</div>`;
+  } else {
+    bx = `<div class="bal-sub" style="margin-top:14px">Carguen los ingresos del mes (jubilación, sueldo…) para ver cuánto ahorran.</div>`;
+  }
+  $('balExtra').innerHTML = bx;
+
+  // Gastos
+  $('gasLabel').textContent = 'Gastado en ' + nombreMes(S.mes);
+  animarNumero($('gasNum'), c.G);
+  let dl = '';
+  if (c.prev > 0) {
+    const dif = c.G - c.prev, pct = Math.round(Math.abs(dif) / c.prev * 100);
+    dl = `<span class="delta ${dif > 0 ? 'bad' : 'good'}">${ic(dif > 0 ? 'trending-up' : 'trending-down')}${pct}% ${dif > 0 ? 'más' : 'menos'} que ${nombreMes(c.mesAnt)}${c.esActual ? ' a esta fecha' : ''}</span>`;
+  } else if (c.G > 0) {
+    dl = `<span class="delta neutral">${ic('info')}Sin gastos de ${nombreMes(c.mesAnt)} para comparar</span>`;
+  }
+  $('gasDelta').innerHTML = dl;
+
+  let pb = '';
+  if (c.p > 0) {
+    const pct = Math.min(100, c.G / c.p * 100), queda = c.p - c.G;
+    const cls = c.G > c.p ? 'bad' : pct >= 85 ? 'warn' : '';
+    pb = `<div class="pres"><div class="pres-top"><b>${queda >= 0 ? (c.esActual ? 'Quedan ' : 'Sobraron ') + plata(queda) : 'Excedido por ' + plata(-queda)}</b><span>de ${plata(c.p)}</span></div>
+      <div class="track ${cls}"><i data-w="${pct}"></i></div>`;
+    if (c.esActual && queda > 0) {
+      const dias = c.diasMes - c.diaHoy + 1;
+      pb += `<div class="pres-sub">Pueden gastar <b>${plata(queda / dias)} por día</b> · ${dias === 1 ? 'queda 1 día' : 'quedan ' + dias + ' días'}</div>`;
+    }
+    pb += '</div>';
+  } else {
+    pb = `<div class="pres"><button class="link" data-ir="ajustes">+ Definir presupuesto mensual</button></div>`;
+  }
+  $('presBox').innerHTML = pb;
+
+  // Tile: presupuesto al cierre
+  let tp;
+  if (c.p > 0) {
+    const resto = c.p - (c.esActual ? c.proy : c.G), ok = resto >= 0;
+    tp = `<div class="ico ${ok ? 'good' : 'bad'}">${ic('piggy-bank')}</div>
+      <p class="label">${c.esActual ? 'Al cierre del mes' : 'Presupuesto'}</p>
+      <div class="v ${ok ? 'good' : 'bad'}">${plata(Math.abs(resto))}</div>
+      <div class="s">${c.esActual
+        ? (ok ? 'les sobraría' : 'se pasarían') + (c.conAnterior ? ' si el resto del mes es como ' + nombreMes(c.mesAnt) : ' a este ritmo')
+        : ok ? 'sobró del presupuesto' : 'por encima del presupuesto'}</div>`;
+  } else {
+    tp = `<div class="ico neutral">${ic('piggy-bank')}</div><p class="label">Presupuesto</p><div class="v">—</div>
+      <div class="s">Definilo en Ajustes para ver la proyección</div>`;
+  }
+  $('tileProy').innerHTML = tp;
+
+  // Tile: gastos contra el mes anterior
+  let tv;
+  if (c.prev > 0) {
+    const dif = c.prev - c.G, ok = dif >= 0;
+    tv = `<div class="ico ${ok ? 'good' : 'bad'}">${ic(ok ? 'arrow-down-right' : 'arrow-up-right')}</div>
+      <p class="label">Gastos vs. ${nombreMes(c.mesAnt)}</p>
+      <div class="v ${ok ? 'good' : 'bad'}">${plata(Math.abs(dif))}</div>
+      <div class="s">${ok ? 'gastaron menos' : 'gastaron de más'}${c.esActual ? ' a esta fecha' : ''}</div>`;
+  } else {
+    tv = `<div class="ico neutral">${ic('calendar')}</div><p class="label">Gastos vs. ${nombreMes(c.mesAnt)}</p><div class="v">—</div>
+      <div class="s">Sin gastos ese mes</div>`;
+  }
+  $('tileVs').innerHTML = tv;
+
+  const ult = ordenar(d.movs).slice(0, 5);
+  $('ultimos').innerHTML = ult.length ? ult.map(m => filaMov(m)).join('')
+    : `<div class="vacio">${ic('receipt')}<div>Todavía no hay movimientos ${c.esActual ? 'este mes' : 'en ' + nombreMes(S.mes)}.</div>${c.esActual ? '<div>Tocá <b>+</b> o <b>Decilo con la voz</b> para empezar.</div>' : ''}</div>`;
+  anchos();
+}
+
+const ordenar = arr => arr.slice().sort((a, b) => b.fecha.localeCompare(a.fecha) || String(b.cargado).localeCompare(String(a.cargado)));
+
+function filaMov(g, conFecha) {
+  const sub = [g.nota ? g.categoria : '', g.quien, conFecha === false ? '' : etiquetaDia(g.fecha)].filter(Boolean);
+  const inn = esIn(g);
+  return `<button class="mov" data-id="${esc(g.id)}">
+    <span class="cat-ico ${inn ? 'in' : ''}">${ic(iconoDe(g.categoria))}</span>
+    <span class="info"><div class="t">${esc(g.nota || g.categoria)}</div><div class="s">${sub.map(esc).join(' · ')}</div></span>
+    <span class="m ${inn ? 'in' : ''}">${inn ? '+' : ''}${plata(g.monto)}</span></button>`;
+}
+
+function barra(x, y, w, h, r) {
+  r = Math.min(r, h, w / 2);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+
+function renderAnalisis() {
+  const c = calc(), d = S.datos, h = d.historial;
+  // Barras agrupadas: ingresos y gastos de los últimos 6 meses
+  const W = 330, H = 190, izq = 34, top = 10, bot = 24, alto = H - top - bot, ancho = W - izq;
+  const max = Math.max(1, ...h.map(x => Math.max(x.gastos, x.ingresos))) * 1.1;
+  const paso = ancho / h.length, bw = Math.min(16, paso * 0.3), gap = 2;
+  let s = '';
+  [0.5, 1].forEach(f => {
+    const y = top + alto - (max / 1.1 * f) / max * alto;
+    s += `<line class="grid" x1="${izq}" x2="${W}" y1="${y}" y2="${y}"/><text class="ytick" x="${izq - 6}" y="${y + 3}" text-anchor="end">${plataCorta(max / 1.1 * f)}</text>`;
+  });
+  s += `<line class="axis" x1="${izq}" x2="${W}" y1="${top + alto}" y2="${top + alto}"/>`;
+  h.forEach((b, i) => {
+    const cx = izq + i * paso + paso / 2;
+    const hi = b.ingresos > 0 ? Math.max(3, b.ingresos / max * alto) : 0;
+    const hg = b.gastos > 0 ? Math.max(3, b.gastos / max * alto) : 0;
+    s += `<g class="grupo ${b.mes === S.mes ? 'sel' : ''}" data-mes="${b.mes}">
+      <rect x="${izq + i * paso}" y="0" width="${paso}" height="${H}" fill="transparent"/>
+      ${hi ? `<path class="in" d="${barra(cx - bw - gap / 2, top + alto - hi, bw, hi, 4)}"/>` : ''}
+      ${hg ? `<path class="out" d="${barra(cx + gap / 2, top + alto - hg, bw, hg, 4)}"/>` : ''}
+      <text class="lab" x="${cx}" y="${H - 6}" text-anchor="middle">${mesCorto(b.mes)}</text>
+      <title>${cap(nombreMes(b.mes))}: ingresos ${plata(b.ingresos)}, gastos ${plata(b.gastos)}</title></g>`;
+  });
+  $('chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ingresos y gastos de los últimos 6 meses">${s}</svg>`;
+  const sel = h.find(x => x.mes === S.mes) || { ingresos: 0, gastos: 0 };
+  const bal = sel.ingresos - sel.gastos;
+  $('chartDet').innerHTML = `<div><span>${cap(nombreMes(S.mes))} · ingresos</span><b>${plata(sel.ingresos)}</b></div>
+    <div><span>${cap(nombreMes(S.mes))} · gastos</span><b>${plata(sel.gastos)}</b></div>
+    <div><span>Balance</span><b class="${sel.ingresos ? (bal >= 0 ? 'good' : 'bad') : ''}">${plata(bal)}</b></div>`;
+
+  // Promedios de meses completos
+  const cerrados = h.filter(x => (x.gastos > 0 || x.ingresos > 0) && x.mes < mesDe(hoy()));
+  if (cerrados.length) {
+    const pi = cerrados.reduce((a, x) => a + x.ingresos, 0) / cerrados.length;
+    const pg = cerrados.reduce((a, x) => a + x.gastos, 0) / cerrados.length;
+    $('promSub').textContent = `Últimos ${cerrados.length === 1 ? 'mes completo' : cerrados.length + ' meses completos'}`;
+    $('promDet').innerHTML = `<div><span>Ingresan</span><b>${plata(pi)}</b></div><div><span>Gastan</span><b>${plata(pg)}</b></div>
+      <div><span>${pi - pg >= 0 ? 'Ahorran' : 'Les falta'}</span><b class="${pi ? (pi - pg >= 0 ? 'good' : 'bad') : ''}">${plata(Math.abs(pi - pg))}${pi > 0 ? ` (${Math.round(Math.abs(pi - pg) / pi * 100)}%)` : ''}</b></div>`;
+  } else {
+    $('promSub').textContent = 'Todavía no hay meses completos con datos';
+    $('promDet').innerHTML = '';
+  }
+
+  // Categorías del tipo elegido
+  const tipo = S.catTipo;
+  document.querySelectorAll('#segCat button').forEach(b => b.classList.toggle('sel', b.dataset.t === tipo));
+  const actuales = tipo === 'ingreso' ? c.ingresos : c.gastos;
+  const previos = tipo === 'ingreso' ? (c.esActual ? c.antIn.filter(g => Number(g.fecha.slice(8)) <= c.diaHoy) : c.antIn) : c.antComp;
+  const por = {}, ant = {};
+  actuales.forEach(g => por[g.categoria] = (por[g.categoria] || 0) + g.monto);
+  previos.forEach(g => ant[g.categoria] = (ant[g.categoria] || 0) + g.monto);
+  const filas = Object.entries(por).sort((a, b) => b[1] - a[1]);
+  const tot = suma(actuales);
+  $('catSub').textContent = 'Comparado con ' + nombreMes(c.mesAnt) + (c.esActual ? ' a esta fecha' : '');
+  if (!filas.length) {
+    $('catList').innerHTML = `<div class="vacio">${ic('chart-pie')}<div>Sin ${tipo === 'ingreso' ? 'ingresos' : 'gastos'} para analizar</div></div>`;
+    return;
+  }
+  const top1 = filas[0][1];
+  $('catList').innerHTML = filas.map(([cat, m]) => {
+    const a = ant[cat] || 0;
+    let dtxt, dcls;
+    if (!a) { dtxt = 'Nuevo'; dcls = 'neutral'; }
+    else {
+      const p = Math.round((m - a) / a * 100);
+      // En gastos subir es malo; en ingresos subir es bueno.
+      const bueno = tipo === 'ingreso' ? p > 0 : p < 0;
+      dcls = p === 0 ? 'neutral' : bueno ? 'good' : 'bad';
+      dtxt = p === 0 ? 'Igual' : (p > 0 ? '▲ ' : '▼ ') + Math.abs(p) + '%';
+    }
+    return `<button class="catrow" data-cat="${esc(cat)}" data-tipo="${tipo}">
+      <span class="cat-ico ${tipo === 'ingreso' ? 'in' : ''}">${ic(iconoDe(cat))}</span>
+      <span class="n">${esc(cat)}</span><span class="a">${plata(m)}</span>
+      <span class="mini"><i class="${tipo === 'ingreso' ? 'in' : ''}" style="width:${m / top1 * 100}%"></i></span>
+      <span class="d ${dcls}">${Math.round(m / tot * 100)}% · ${dtxt}</span></button>`;
+  }).join('');
+}
+
+function renderMovs() {
+  const q = norm(S.busqueda.trim());
+  let arr = S.datos.movs;
+  if (S.filtroTipo !== 'todos') arr = arr.filter(g => g.tipo === S.filtroTipo);
+  if (S.filtroCat) arr = arr.filter(g => g.categoria === S.filtroCat);
+  if (q) arr = arr.filter(g => norm(g.nota + ' ' + g.categoria + ' ' + g.quien).includes(q));
+  document.querySelectorAll('#segMovs button').forEach(b => b.classList.toggle('sel', b.dataset.t === S.filtroTipo));
+  $('filtro').hidden = !S.filtroCat;
+  if (S.filtroCat) $('filtro').innerHTML = esc(S.filtroCat) + ic('x');
+  const ing = suma(arr.filter(esIn)), gas = suma(arr.filter(g => !esIn(g)));
+  const partes = [];
+  if (ing) partes.push(`ingresos <b>${plata(ing)}</b>`);
+  if (gas) partes.push(`gastos <b>${plata(gas)}</b>`);
+  $('resFiltro').innerHTML = arr.length ? `${arr.length} ${arr.length === 1 ? 'movimiento' : 'movimientos'} · ${partes.join(' · ')}` : '';
+  if (!arr.length) {
+    $('movs').innerHTML = `<div class="vacio">${ic(q ? 'search-x' : 'receipt')}<div>${q || S.filtroCat || S.filtroTipo !== 'todos' ? 'No se encontraron movimientos' : 'Todavía no hay movimientos en ' + nombreMes(S.mes)}</div></div>`;
+    return;
+  }
+  let html = '', dia = null, grupo = [];
+  const cerrar = () => {
+    if (!grupo.length) return;
+    const neto = suma(grupo.filter(esIn)) - suma(grupo.filter(g => !esIn(g)));
+    html += `<div class="dia"><span>${etiquetaDia(dia)}</span><span>${neto > 0 ? '+' : ''}${plata(neto)}</span></div>
+      <div class="card list">${grupo.map(g => filaMov(g, false)).join('')}</div>`;
+  };
+  ordenar(arr).forEach(g => {
+    if (g.fecha !== dia) { cerrar(); dia = g.fecha; grupo = []; }
+    grupo.push(g);
+  });
+  cerrar();
+  $('movs').innerHTML = html;
+}
+
+function renderAjustes() {
+  const p = S.datos.presupuesto;
+  if (document.activeElement !== $('presInput')) $('presInput').value = p ? '$ ' + Number(p).toLocaleString('es-AR') : '';
+  $('ajPersonas').innerHTML = opcionesPersonas();
+  document.querySelectorAll('#segAjCat button').forEach(b => b.classList.toggle('sel', b.dataset.t === S.ajTipo));
+  const lista = todasCats(S.ajTipo);
+  $('misCats').innerHTML = lista.length ? lista.map(c => `<div class="fila-cat">
+      <span class="cat-ico ${c.t === 'ingreso' ? 'in' : ''}">${ic(c.i)}</span>
+      <span class="nm">${esc(c.n)}${c.base ? '' : '<span class="tag-propia">Propia</span>'}</span>
+      <button class="icon-btn" data-editar="${esc(c.n)}" aria-label="Editar ${esc(c.n)}">${ic('pencil')}</button>
+      <button class="icon-btn borrar" data-borrar="${esc(c.n)}" aria-label="Borrar ${esc(c.n)}">${ic('trash-2')}</button></div>`).join('')
+    : '<p class="sin">No hay categorías. Agregá una o restaurá las originales.</p>';
+  $('btnRestaurar').hidden = !hayCambiosFabrica();
+  renderTema();
+}
+
+// ================= Tema claro / oscuro =================
+function temaActual() { const t = leer('gastos.tema'); return t === 'light' || t === 'dark' ? t : 'auto'; }
+function renderTema() {
+  document.querySelectorAll('#segTema button').forEach(b => b.classList.toggle('sel', b.dataset.tema === temaActual()));
+}
+$('segTema').onclick = e => {
+  const b = e.target.closest('[data-tema]'); if (!b) return;
+  const t = b.dataset.tema;
+  grabar('gastos.tema', t);
+  if (t === 'auto') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+  vibrar(); renderTema();
+};
+const opcionesPersonas = () => S.datos.personas.map(p =>
+  `<button class="opcion ${p === S.yo ? 'sel' : ''}" data-p="${esc(p)}">${esc(p)}${p === S.yo ? ic('circle-check') : ''}</button>`).join('');
+
+// ================= Navegación =================
+function irA(tab) {
+  S.tab = tab;
+  const map = { inicio: 'tInicio', analisis: 'tAnalisis', movs: 'tMovs', ajustes: 'tAjustes' };
+  Object.entries(map).forEach(([k, id]) => $(id).hidden = k !== tab);
+  document.querySelectorAll('.tb[data-tab]').forEach(b => b.classList.toggle('act', b.dataset.tab === tab));
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tb[data-tab]').forEach(b => b.onclick = () => irA(b.dataset.tab));
+document.addEventListener('click', e => {
+  if (!$('quienMenu').hidden && !e.target.closest('.quien-w')) abrirMenuQuien(false);
+  const ir = e.target.closest('[data-ir]'); if (ir) { irA(ir.dataset.ir); return; }
+  const mov = e.target.closest('.mov[data-id]');
+  if (mov) { const g = S.datos.movs.find(x => x.id === mov.dataset.id); if (g) abrirHoja(g); return; }
+  const cr = e.target.closest('.catrow[data-cat]');
+  if (cr) { S.filtroCat = cr.dataset.cat; S.filtroTipo = cr.dataset.tipo; renderMovs(); iconos(); irA('movs'); return; }
+  const gr = e.target.closest('.grupo[data-mes]');
+  if (gr && gr.dataset.mes !== S.mes) cambiarMes(gr.dataset.mes);
+});
+function cambiarMes(m) { S.mes = m; S.filtroCat = null; cargar(); }
+$('mesPrev').onclick = () => cambiarMes(sumarMes(S.mes, -1));
+$('mesNext').onclick = () => cambiarMes(sumarMes(S.mes, 1));
+$('btnReintentar').onclick = cargar;
+$('filtro').onclick = () => { S.filtroCat = null; renderMovs(); iconos(); };
+$('buscar').oninput = () => { S.busqueda = $('buscar').value; renderMovs(); iconos(); };
+$('segMovs').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; S.filtroTipo = b.dataset.t; S.filtroCat = null; renderMovs(); iconos(); };
+$('segCat').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; S.catTipo = b.dataset.t; renderAnalisis(); iconos(); };
+$('accVoz').onclick = () => { if (S.datos) { abrirHoja(null, { voz: true }); escuchar(); } };
+$('accIngreso').onclick = () => { if (S.datos) abrirHoja(null, { tipo: 'ingreso' }); };
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !$('sheet').classList.contains('open')) cargar();
+});
+
+// ================= Usuario =================
+function pedirQuien() {
+  $('bienPersonas').innerHTML = opcionesPersonas();
+  $('bienvenida').hidden = false;
+  iconos();
+}
+function elegirPersona(e) {
+  const b = e.target.closest('[data-p]'); if (!b) return;
+  S.yo = b.dataset.p; grabar('gastos.quien', S.yo);
+  $('bienvenida').hidden = true;
+  render();
+}
+$('bienPersonas').onclick = elegirPersona;
+$('ajPersonas').onclick = e => { elegirPersona(e); if (e.target.closest('[data-p]')) toast('Listo, sos ' + S.yo); };
+function abrirMenuQuien(abrir) {
+  $('quienMenu').hidden = !abrir;
+  $('quienBtn').setAttribute('aria-expanded', abrir);
+  if (!abrir) return;
+  $('quienMenu').innerHTML = '<p>¿Quién está usando la app?</p>' + S.datos.personas.map(p =>
+    `<button role="menuitemradio" aria-checked="${p === S.yo}" class="${p === S.yo ? 'sel' : ''}" data-p="${esc(p)}">
+      <span class="avatar">${esc(p.charAt(0).toUpperCase())}</span>${esc(p)}${p === S.yo ? ic('check') : ''}</button>`).join('');
+  iconos();
+}
+$('quienBtn').onclick = e => { e.stopPropagation(); if (S.datos) abrirMenuQuien($('quienMenu').hidden); };
+$('quienMenu').onclick = e => {
+  const b = e.target.closest('[data-p]'); if (!b) return;
+  const cambio = b.dataset.p !== S.yo;
+  elegirPersona(e);
+  abrirMenuQuien(false);
+  if (cambio) toast('Ahora estás como ' + S.yo);
+};
+
+// ================= Ajustes =================
+$('presInput').oninput = () => {
+  const n = $('presInput').value.replace(/\D/g, '').slice(0, 12);
+  $('presInput').value = n ? '$ ' + Number(n).toLocaleString('es-AR') : '';
+};
+$('btnPres').onclick = async () => {
+  if (S.ocupado) return;
+  S.ocupado = true; $('btnPres').disabled = true;
+  try {
+    S.datos = await api('setPresupuesto', Number($('presInput').value.replace(/\D/g, '')) || 0, S.mes);
+    $('presInput').blur(); render(); toast('Presupuesto guardado'); irA('inicio');
+  } catch (e) { toast('No se pudo guardar'); }
+  finally { S.ocupado = false; $('btnPres').disabled = false; }
+};
+
+// ================= Hoja de carga =================
+$('keypad').innerHTML = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '000', '0', 'del']
+  .map(k => `<button data-k="${k}" ${k === 'del' ? 'aria-label="Borrar"' : ''}>${k === 'del' ? ic('delete') : k}</button>`).join('');
+
+function abrirHoja(g, opts) {
+  opts = opts || {};
+  S.form = g ? { id: g.id, tipo: g.tipo, monto: String(g.monto), categoria: g.categoria, fecha: g.fecha, otro: false, quien: g.quien }
+             : { id: null, tipo: opts.tipo || 'gasto', monto: '', categoria: '', fecha: hoy(), otro: false };
+  $('nota').value = g ? g.nota : '';
+  $('btnBorrar').hidden = !g;
+  $('aviso').hidden = true;
+  $('btnGuardar').disabled = false;
+  $('bannerVoz').hidden = true;
+  renderHoja(true);
+  mostrarPaso(g ? 2 : opts.voz ? 'voz' : 1);
+  if (opts.voz) prepararVoz();
+  $('backdrop').classList.add('open');
+  $('sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  iconos();
+}
+function cerrarHoja() {
+  pararVoz();
+  $('backdrop').classList.remove('open');
+  $('sheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function mostrarPaso(n) {
+  $('paso1').hidden = n !== 1; $('paso2').hidden = n !== 2; $('pasoVoz').hidden = n !== 'voz';
+  if (n !== 'voz') pararVoz();
+  if (n === 2) $('cuerpo2').scrollTop = 0;
+}
+function renderCatgrid() {
+  const t = S.form.tipo;
+  $('catgrid').innerHTML = todasCats(t).map(c =>
+    `<button class="catbtn" data-c="${esc(c.n)}"><span class="cat-ico ${t === 'ingreso' ? 'in' : ''}">${ic(c.i)}</span>${esc(c.n)}</button>`).join('')
+    + `<button class="catbtn nueva" id="catNueva"><span class="cat-ico">${ic('plus')}</span>Nueva categoría</button>`;
+}
+function renderRecientes() {
+  const t = S.form.tipo, vistos = [];
+  ordenar(S.datos.movs.concat(S.datos.anterior)).forEach(g => {
+    if (g.tipo === t && !vistos.includes(g.categoria) && vistos.length < 5) vistos.push(g.categoria);
+  });
+  $('recBox').hidden = !vistos.length;
+  $('recientes').innerHTML = vistos.map(c => `<button class="chip ${t === 'ingreso' ? 'in' : ''}" data-c="${esc(c)}">${ic(iconoDe(c))}${esc(c)}</button>`).join('');
+}
+// todo=true vuelve a dibujar la grilla de categorías (al abrir o al cambiar de tipo).
+function renderHoja(todo) {
+  const f = S.form, n = Number(f.monto) || 0, inn = f.tipo === 'ingreso';
+  if (todo) { renderCatgrid(); renderRecientes(); }
+  const palabra = inn ? 'ingreso' : 'gasto';
+  $('tit1').textContent = f.id ? 'Editar ' + palabra : 'Nuevo movimiento';
+  $('tit2').textContent = (f.id ? 'Editar ' : 'Nuevo ') + palabra;
+  $('btnGuardar').textContent = f.id ? 'Guardar cambios' : 'Guardar ' + palabra;
+  $('btnGuardar').classList.toggle('in', inn);
+  $('btnBorrar').lastChild.textContent = 'Borrar ' + palabra;
+  document.querySelectorAll('#segTipo button').forEach(b => b.classList.toggle('sel', b.dataset.t === f.tipo));
+  $('montoHint').textContent = inn ? '¿Cuánto ingresó?' : '¿Cuánto gastaste?';
+  $('montoVer').textContent = plata(n);
+  $('montoVer').classList.toggle('cero', !n);
+  $('montoVer').classList.toggle('in', inn);
+  $('montoMini').classList.toggle('in', inn);
+  $('montoMiniT').textContent = inn ? 'Ingreso' : 'Gasto';
+  $('montoMiniV').textContent = (inn ? '+' : '') + plata(n);
+  document.querySelectorAll('#catgrid .catbtn, #recientes .chip').forEach(b => b.classList.toggle('sel', b.dataset.c === f.categoria));
+  const tipoF = f.otro ? 'otro' : f.fecha === hoy() ? 'hoy' : f.fecha === ayer() ? 'ayer' : 'otro';
+  document.querySelectorAll('#segFecha button').forEach(b => b.classList.toggle('sel', b.dataset.f === tipoF));
+  $('fecha').hidden = tipoF !== 'otro';
+  $('fecha').value = f.fecha;
+  iconos();
+}
+function cambiarTipo(t) {
+  if (S.form.tipo === t) return;
+  S.form.tipo = t;
+  if (!todasCats(t).some(c => c.n === S.form.categoria)) S.form.categoria = '';
+  renderHoja(true);
+}
+
+$('segTipo').onclick = e => { const b = e.target.closest('[data-t]'); if (b) { vibrar(); cambiarTipo(b.dataset.t); } };
+$('keypad').onclick = e => {
+  const b = e.target.closest('[data-k]'); if (!b) return;
+  vibrar();
+  const k = b.dataset.k; let m = S.form.monto;
+  if (k === 'del') m = m.slice(0, -1);
+  else if (m.length + k.length <= 10) m = (m + k).replace(/^0+/, '');
+  S.form.monto = m; renderHoja();
+};
+$('btnContinuar').onclick = () => {
+  if (!(Number(S.form.monto) > 0)) {
+    const el = $('montoVer'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+    return;
+  }
+  mostrarPaso(2);
+};
+$('montoMini').onclick = () => mostrarPaso(1);
+$('atras2').onclick = () => S.form.id ? cerrarHoja() : mostrarPaso(1);
+$('cerrar1').onclick = $('cerrar2').onclick = $('cerrarVoz').onclick = $('backdrop').onclick = cerrarHoja;
+const elegirCat = e => {
+  if (e.target.closest('#catNueva')) { abrirNuevaCat(true); return; }
+  const b = e.target.closest('[data-c]'); if (!b) return;
+  vibrar(); S.form.categoria = b.dataset.c; $('aviso').hidden = true; renderHoja();
+};
+$('catgrid').onclick = elegirCat;
+$('recientes').onclick = elegirCat;
+$('segFecha').onclick = e => {
+  const b = e.target.closest('[data-f]'); if (!b) return;
+  S.form.otro = b.dataset.f === 'otro';
+  if (b.dataset.f === 'hoy') S.form.fecha = hoy();
+  if (b.dataset.f === 'ayer') S.form.fecha = ayer();
+  renderHoja();
+  if (S.form.otro) { try { $('fecha').showPicker(); } catch (err) { $('fecha').focus(); } }
+};
+$('fecha').max = hoy();
+$('fecha').onchange = () => { if ($('fecha').value) { S.form.fecha = $('fecha').value; renderHoja(); } };
+
+$('btnGuardar').onclick = async () => {
+  const f = S.form;
+  if (S.ocupado) return;
+  if (!(Number(f.monto) > 0)) { avisar('Falta el monto'); return; }
+  if (!f.categoria) { avisar('Elegí una categoría'); return; }
+  const g = { id: f.id, tipo: f.tipo, monto: Number(f.monto), categoria: f.categoria, nota: $('nota').value.trim(),
+    fecha: f.fecha, quien: f.id && f.quien ? f.quien : S.yo };
+  S.ocupado = true; $('btnGuardar').disabled = true; $('btnGuardar').textContent = 'Guardando…';
+  try {
+    const mes = f.id ? S.mes : mesDe(f.fecha);
+    S.datos = await api(f.id ? 'editarGasto' : 'agregarGasto', g, mes);
+    S.mes = mes;
+    cerrarHoja(); render();
+    toast(f.id ? 'Cambios guardados' : (f.tipo === 'ingreso' ? 'Ingreso guardado' : 'Gasto guardado'));
+  } catch (e) {
+    avisar('No se pudo guardar. Revisá la conexión.');
+    $('btnGuardar').disabled = false; $('btnGuardar').textContent = 'Reintentar';
+  } finally { S.ocupado = false; }
+};
+function avisar(t) { $('aviso').textContent = t; $('aviso').hidden = false; }
+
+function confirmar(titulo, texto) {
+  return new Promise(res => {
+    $('dialogoTit').textContent = titulo;
+    $('dialogoTxt').textContent = texto;
+    $('dialogo').hidden = false;
+    const fin = v => { $('dialogo').hidden = true; $('dSi').onclick = $('dNo').onclick = null; res(v); };
+    $('dSi').onclick = () => fin(true);
+    $('dNo').onclick = () => fin(false);
+  });
+}
+$('btnBorrar').onclick = async () => {
+  const palabra = S.form.tipo === 'ingreso' ? 'ingreso' : 'gasto';
+  const ok = await confirmar('¿Borrar este ' + palabra + '?', plata(Number(S.form.monto)) + ' en ' + S.form.categoria + '. No se puede deshacer.');
+  if (!ok || S.ocupado) return;
+  S.ocupado = true;
+  try {
+    S.datos = await api('borrarGasto', S.form.id, S.mes);
+    cerrarHoja(); render(); toast(cap(palabra) + ' borrado');
+  } catch (e) { avisar('No se pudo borrar. Revisá la conexión.'); }
+  finally { S.ocupado = false; }
+};
+$('btnNuevo').onclick = () => { if (S.datos) abrirHoja(null); };
+
+// ================= Voz =================
+// Usa el reconocimiento de voz del navegador. Si el micrófono está bloqueado
+// (pasa dentro de Google Apps Script), se usa el micrófono del teclado del celular.
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, vozEstado = 'inicio', vozBloqueada = false;
+const VOZ_TXT = {
+  inicio: ['Tocá el micrófono y hablá', 'Decí si es gasto o ingreso, cuánto y en qué.'],
+  escuchando: ['Te escucho…', 'Hablá tranquilo. Cuando termines, se detiene solo.'],
+  nada: ['No escuché nada', 'Tocá el micrófono y probá de nuevo, más cerca del celular.'],
+  error: ['No se pudo escuchar', 'Revisá la conexión y probá de nuevo, o escribilo abajo.'],
+  teclado: ['Usá el micrófono del teclado', 'Tocá el cuadro de abajo y después el 🎤 del teclado. Cuando termines, tocá Listo.'],
+  noentendi: ['No entendí el monto', 'Probá de nuevo diciendo el número, por ejemplo: “quince mil pesos”.']
+};
+function estadoVoz(e) {
+  vozEstado = e;
+  $('vozEstado').textContent = VOZ_TXT[e][0];
+  $('vozSub').textContent = VOZ_TXT[e][1];
+  $('mic').classList.toggle('on', e === 'escuchando');
+}
+function prepararVoz() {
+  $('vozTexto').value = '';
+  estadoVoz(SR && !vozBloqueada ? 'inicio' : 'teclado');
+}
+function irATeclado() {
+  vozBloqueada = true;
+  estadoVoz('teclado');
+  setTimeout(() => $('vozTexto').focus(), 100);
+}
+function pararVoz() {
+  if (rec) { try { rec.abort(); } catch (e) {} rec = null; }
+  if (vozEstado === 'escuchando') estadoVoz('inicio');
+}
+function escuchar() {
+  if (vozEstado === 'escuchando') { try { rec.stop(); } catch (e) {} return; }
+  if (!SR || vozBloqueada) { irATeclado(); return; }
+  let final = '', alts = [];
+  try { rec = new SR(); } catch (e) { irATeclado(); return; }
+  rec.lang = 'es-AR';
+  rec.interimResults = true;
+  rec.maxAlternatives = 3;
+  rec.continuous = false;
+  rec.onresult = ev => {
+    let interim = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const r = ev.results[i];
+      if (r.isFinal) { final += r[0].transcript + ' '; alts = Array.from(r).map(a => a.transcript); }
+      else interim += r[0].transcript;
+    }
+    $('vozTexto').value = (final + interim).trim();
+  };
+  rec.onerror = ev => {
+    if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed' || ev.error === 'audio-capture') irATeclado();
+    else if (ev.error === 'no-speech') estadoVoz('nada');
+    else if (ev.error !== 'aborted') estadoVoz('error');
+  };
+  rec.onend = () => {
+    rec = null;
+    if (final.trim()) usarTexto(final, alts);
+    else if (vozEstado === 'escuchando') estadoVoz('nada');
+  };
+  estadoVoz('escuchando');
+  vibrar();
+  try { rec.start(); } catch (e) { irATeclado(); }
+}
+function usarTexto(texto, alts) {
+  const opciones = [texto].concat(alts || []).filter(t => t && t.trim());
+  if (!opciones.length) { estadoVoz(SR && !vozBloqueada ? 'inicio' : 'teclado'); return; }
+  let r = null;
+  for (const t of opciones) {
+    const x = interpretar(t);
+    if (x.monto) { r = x; break; }
+    if (!r) r = x;
+  }
+  if (!r.monto && !r.categoria) { estadoVoz('noentendi'); return; }
+  const f = S.form;
+  f.tipo = r.tipo;
+  if (r.monto) f.monto = String(r.monto);
+  f.categoria = r.categoria || (todasCats(r.tipo).some(c => c.n === f.categoria) ? f.categoria : '');
+  if (r.nota && !$('nota').value) $('nota').value = r.nota;
+  f.fecha = r.fecha;
+  f.otro = r.fecha !== hoy() && r.fecha !== ayer();
+  renderHoja(true);
+  $('oido').textContent = texto.trim();
+  $('bannerVoz').hidden = false;
+  $('aviso').hidden = true;
+  if (!r.monto) { mostrarPaso(1); toast('Decime el monto con los números'); return; }
+  mostrarPaso(2);
+  if (!r.categoria) avisar('Elegí una categoría');
+  vibrar();
+}
+$('mic').onclick = escuchar;
+$('btnVoz').onclick = () => { mostrarPaso('voz'); prepararVoz(); escuchar(); };
+$('atrasVoz').onclick = () => mostrarPaso(1);
+$('btnUsarTexto').onclick = () => usarTexto($('vozTexto').value);
+document.querySelector('.ejemplos').onclick = e => {
+  const b = e.target.closest('[data-ej]'); if (!b) return;
+  pararVoz(); $('vozTexto').value = b.dataset.ej;
+};
+
+// ---- Interpretar lo que se dijo ----
+const UNIDADES = { cero: 0, un: 1, uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9,
+  diez: 10, once: 11, doce: 12, trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18, diecinueve: 19,
+  veinte: 20, veintiun: 21, veintiuno: 21, veintiuna: 21, veintidos: 22, veintitres: 23, veinticuatro: 24, veinticinco: 25,
+  veintiseis: 26, veintisiete: 27, veintiocho: 28, veintinueve: 29, treinta: 30, cuarenta: 40, cincuenta: 50, sesenta: 60,
+  setenta: 70, ochenta: 80, noventa: 90, cien: 100, ciento: 100, doscientos: 200, doscientas: 200, trescientos: 300,
+  trescientas: 300, cuatrocientos: 400, cuatrocientas: 400, quinientos: 500, quinientas: 500, seiscientos: 600,
+  seiscientas: 600, setecientos: 700, setecientas: 700, ochocientos: 800, ochocientas: 800, novecientos: 900, novecientas: 900 };
+function numDigitos(t) {
+  if (/^\d{1,3}([.,]\d{3})+$/.test(t)) return Number(t.replace(/[.,]/g, ''));   // 15.000 / 1.500.000 / 15,000
+  if (/^\d+([.,]\d+)?$/.test(t)) return Number(t.replace(',', '.'));            // 15000 / 2,5
+  return null;
+}
+// Devuelve todos los montos que aparecen en la frase ("15 mil", "quince mil quinientos", "2 palos y medio", "15.000").
+function extraerMontos(tokens) {
+  const res = [];
+  let i = 0;
+  while (i < tokens.length) {
+    let total = 0, cur = 0, usado = false, soloArticulo = true, escala = 1, j = i;
+    for (; j < tokens.length; j++) {
+      const t = tokens[j], d = numDigitos(t), w = UNIDADES[t];
+      if (d != null) { cur += d; usado = true; soloArticulo = false; }
+      else if (w != null) { cur += w; usado = true; if (!['un', 'uno', 'una'].includes(t)) soloArticulo = false; }
+      else if (['mil', 'luca', 'lucas'].includes(t)) { total += (cur || 1) * 1000; cur = 0; escala = 1000; usado = true; soloArticulo = false; }
+      else if (usado && ['millon', 'millones', 'palo', 'palos'].includes(t)) {
+        total = (total + (cur || 1)) * 1e6; cur = 0; escala = 1e6; soloArticulo = false;
+      }
+      else if (usado && t === 'y') continue;
+      else if (usado && t === 'medio' && escala > 1) { total += escala / 2; }
+      else break;
+    }
+    if (usado && !soloArticulo) res.push(total + cur);
+    i = usado ? Math.max(j, i + 1) : i + 1;
+  }
+  return res;
+}
+const PAL_GASTO = ['gaste', 'gastamos', 'gasto', 'pague', 'pagamos', 'compre', 'compramos', 'abone', 'abonamos', 'saque'];
+const PAL_INGRESO = ['cobre', 'cobramos', 'cobro', 'me pagaron', 'nos pagaron', 'me depositaron', 'nos depositaron', 'depositaron',
+  'me transfirieron', 'nos transfirieron', 'ingreso', 'ingresaron', 'entraron', 'entro', 'recibi', 'recibimos', 'gane', 'ganamos',
+  'vendi', 'vendimos', 'jubilacion', 'sueldo', 'aguinaldo', 'pension', 'me regalaron', 'nos regalaron', 'reintegro', 'plazo fijo', 'intereses'];
+function interpretar(texto) {
+  const t = norm(texto).replace(/\$/g, ' ').replace(/(\d)\s(?=\d{3}\b)/g, '$1').replace(/(\d)([a-z])/g, '$1 $2');
+  const limpio = ' ' + t.replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+  const tiene = kw => limpio.includes(' ' + kw + ' ');
+  // ¿Gasto o ingreso? Si dice "gasté/pagué/compré" es gasto aunque mencione otra cosa.
+  const tipo = !PAL_GASTO.some(tiene) && PAL_INGRESO.some(tiene) ? 'ingreso' : 'gasto';
+  // Monto: el número más grande que se haya dicho.
+  const tokens = t.replace(/[^a-z0-9.,]+/g, ' ').split(' ').map(x => x.replace(/^[.,]+|[.,]+$/g, '')).filter(Boolean);
+  const montos = extraerMontos(tokens);
+  const monto = montos.length ? Math.round(Math.max(...montos)) : 0;
+  // Categoría: la palabra clave más larga que coincida.
+  let mejor = '', largo = 0, kwMejor = '';
+  todasCats(tipo).forEach(c => {
+    const kws = (CLAVES[c.base || c.n] || []).concat([norm(c.n).replace(/[^a-z0-9]+/g, ' ').trim()]);
+    kws.forEach(k => { if (k && k.length > largo && tiene(k)) { mejor = c.n; largo = k.length; kwMejor = k; } });
+  });
+  // Fecha
+  let fecha = hoy();
+  if (tiene('anteayer') || tiene('antes de ayer') || tiene('antes de anoche')) { const d = new Date(); d.setDate(d.getDate() - 2); fecha = fechaStr(d); }
+  else if (tiene('ayer') || tiene('anoche')) fecha = ayer();
+  return { tipo, monto, categoria: mejor, nota: MARCAS[kwMejor] || '', fecha };
+}
+
+// ================= Crear / editar categoría =================
+// modo 'nueva' o 'editar'; en edición "anterior" es el nombre actual y "base" el original de fábrica.
+const NC = { modo: 'nueva', icono: 'tag', tipo: 'gasto', desdeHoja: false, anterior: '', base: '' };
+const ICONOS = CATS_FABRICA.map(c => c.i).concat(ICONOS_EXTRA).filter((v, i, a) => a.indexOf(v) === i);
+$('ncIconos').innerHTML = ICONOS.map(n => `<button data-i="${n}" aria-label="${n}">${ic(n)}</button>`).join('');
+function abrirNuevaCat(desdeHoja, tipo) {
+  Object.assign(NC, { modo: 'nueva', icono: 'tag', desdeHoja, anterior: '', base: '',
+    tipo: desdeHoja && S.form ? S.form.tipo : (tipo || 'gasto') });
+  $('ncNombre').value = '';
+  abrirDlgCat();
+}
+function abrirEditarCat(c) {
+  Object.assign(NC, { modo: 'editar', icono: c.i, tipo: c.t, desdeHoja: false, anterior: c.n, base: c.base });
+  $('ncNombre').value = c.n;
+  abrirDlgCat();
+}
+function abrirDlgCat() {
+  const editar = NC.modo === 'editar';
+  $('dlgCatTit').textContent = editar ? 'Editar categoría' : 'Nueva categoría';
+  $('ncSi').textContent = editar ? 'Guardar' : 'Crear';
+  $('ncTipo').hidden = editar;   // el tipo no se cambia: los movimientos ya cargados quedarían mal
+  $('ncErr').hidden = true; $('ncSi').disabled = false;
+  renderNuevaCat();
+  $('dlgCat').hidden = false;
+  const sel = document.querySelector('#ncIconos button.sel');
+  if (sel) sel.scrollIntoView({ block: 'nearest' });
+  if (!editar) setTimeout(() => $('ncNombre').focus(), 50);
+}
+function renderNuevaCat() {
+  const n = $('ncNombre').value.trim();
+  $('ncIco').innerHTML = ic(NC.icono);
+  $('ncIco').classList.toggle('in', NC.tipo === 'ingreso');
+  $('ncPrev').innerHTML = n ? esc(n) : '<span class="vacio-n">Así se va a ver</span>';
+  document.querySelectorAll('#ncIconos button').forEach(b => b.classList.toggle('sel', b.dataset.i === NC.icono));
+  document.querySelectorAll('#ncTipo button').forEach(b => b.classList.toggle('sel', b.dataset.t === NC.tipo));
+  iconos();
+}
+$('ncTipo').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; NC.tipo = b.dataset.t; renderNuevaCat(); };
+$('ncNombre').oninput = () => { $('ncErr').hidden = true; renderNuevaCat(); };
+$('ncIconos').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; vibrar(); NC.icono = b.dataset.i; renderNuevaCat(); };
+$('ncNo').onclick = () => $('dlgCat').hidden = true;
+$('ncSi').onclick = async () => {
+  const n = cap($('ncNombre').value.trim().replace(/\s+/g, ' '));
+  const err = t => { $('ncErr').textContent = t; $('ncErr').hidden = false; };
+  if (!n) { err('Escribí un nombre'); return; }
+  const editar = NC.modo === 'editar';
+  if (todasCats().some(c => c.n.toLowerCase() === n.toLowerCase() && c.n !== NC.anterior)) { err('Ya existe una categoría con ese nombre'); return; }
+  if (S.ocupado) return;
+  S.ocupado = true; $('ncSi').disabled = true;
+  try {
+    if (editar) {
+      S.datos = await api('editarCategoria', NC.anterior, { n, i: NC.icono, t: NC.tipo, base: NC.base }, S.mes);
+      $('dlgCat').hidden = true;
+      if (S.filtroCat === NC.anterior) S.filtroCat = n;
+      render();
+      toast('Categoría actualizada');
+      return;
+    }
+    S.datos = await api('agregarCategoria', { n, i: NC.icono, t: NC.tipo }, S.mes);
+    $('dlgCat').hidden = true;
+    if (NC.desdeHoja && S.form) {
+      S.form.tipo = NC.tipo;
+      S.form.categoria = n;
+      renderHoja(true);
+      const sel = document.querySelector('#catgrid .catbtn.sel');
+      if (sel) sel.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+    render();
+    toast('Categoría creada');
+  } catch (e) {
+    err(e && e.message && /existe/.test(e.message) ? 'Ya existe una categoría con ese nombre' : 'No se pudo guardar. Revisá la conexión.');
+  } finally { S.ocupado = false; $('ncSi').disabled = false; }
+};
+$('btnNuevaCat').onclick = () => abrirNuevaCat(false, S.ajTipo);
+$('segAjCat').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; S.ajTipo = b.dataset.t; renderAjustes(); iconos(); };
+$('misCats').onclick = async e => {
+  const ed = e.target.closest('[data-editar]');
+  if (ed) { const c = todasCats().find(x => x.n === ed.dataset.editar); if (c) abrirEditarCat(c); return; }
+  const b = e.target.closest('[data-borrar]'); if (!b) return;
+  const c = todasCats().find(x => x.n === b.dataset.borrar); if (!c) return;
+  const ok = await confirmar('¿Borrar "' + c.n + '"?', 'Ya no va a aparecer en la lista. Los movimientos ya cargados no se borran.');
+  if (!ok || S.ocupado) return;
+  S.ocupado = true;
+  try { S.datos = await api('borrarCategoria', c, S.mes); render(); toast('Categoría borrada'); }
+  catch (err) { toast('No se pudo borrar'); }
+  finally { S.ocupado = false; }
+};
+$('btnRestaurar').onclick = async () => {
+  const ok = await confirmar('¿Restaurar las originales?', 'Las categorías de fábrica vuelven con su nombre e ícono. Las que agregaron ustedes se mantienen.');
+  if (!ok || S.ocupado) return;
+  S.ocupado = true;
+  try { S.datos = await api('restaurarCategorias', S.mes); render(); toast('Categorías restauradas'); }
+  catch (err) { toast('No se pudo restaurar'); }
+  finally { S.ocupado = false; }
+};
+
+let toastT;
+function toast(t) {
+  $('toastTxt').textContent = t;
+  $('toast').classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => $('toast').classList.remove('show'), 2200);
+}
+
+// ================= App instalable (versión PWA) =================
+let promptInstalar = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  promptInstalar = e;
+  $('instalar').hidden = false;
+  iconos();
+});
+$('btnInstalar').onclick = async () => {
+  if (!promptInstalar) return;
+  promptInstalar.prompt();
+  const r = await promptInstalar.userChoice;
+  promptInstalar = null;
+  $('instalar').hidden = true;
+  if (r.outcome === 'accepted') toast('¡Listo! Ya está en el celular');
+};
+window.addEventListener('appinstalled', () => { $('instalar').hidden = true; });
+if (!EN_GOOGLE && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+// Accesos directos del ícono (mantener apretado el ícono de la app).
+const ACCION = new URLSearchParams(location.search).get('accion');
+
+iconos();
+cargar().then(() => {
+  if (!S.datos || !ACCION) return;
+  history.replaceState(null, '', location.pathname);
+  if (ACCION === 'voz') abrirHoja(null, { voz: true });
+  else if (ACCION === 'gasto') abrirHoja(null);
+  else if (ACCION === 'ingreso') abrirHoja(null, { tipo: 'ingreso' });
+});
+</script>
+</body>
+</html>
